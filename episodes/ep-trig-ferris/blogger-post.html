@@ -1,0 +1,98 @@
+<!-- «عُمق» — العجلة الدوّارة ودالة الجيب. الصق هذا كله في وضع HTML في Blogger. -->
+<style>
+.umq{font-family:Cairo,Tahoma,sans-serif;color:#1D2A3A;line-height:1.9;font-size:17px;direction:rtl}
+.umq h2{font-size:24px;margin:30px 0 10px;color:#1D2A3A;border-right:6px solid #14905A;padding-right:12px}
+.umq h3{font-size:19px;margin:22px 0 6px}
+.umq .lead{font-size:19px;background:#FBF6EA;border-radius:16px;padding:16px 20px;margin:0 0 18px}
+.umq .m{font-family:"STIX Two Text","Times New Roman",serif;direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+.umq .eq{font-family:"STIX Two Text","Times New Roman",serif;direction:ltr;text-align:center;font-size:21px;background:#fffdf7;border:1px solid rgba(29,42,58,.12);border-radius:12px;padding:10px;margin:10px 0}
+.umq .app{position:relative;width:100%;height:85vh;min-height:560px;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px -12px rgba(60,40,10,.35);margin:10px 0 6px}
+.umq .app iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.umq table{border-collapse:collapse;margin:10px auto;direction:ltr;font-family:"STIX Two Text","Times New Roman",serif;font-size:17px}
+.umq td,.umq th{border:1px solid #d9cfba;padding:6px 14px;text-align:center}
+.umq th{background:#FBF6EA}
+.umq .bl{color:#1F6FD1}.umq .rd{color:#D6453D}.umq .gr{color:#14905A;font-weight:700}
+.umq .box{background:#fffdf7;border:2px dashed #E0A526;border-radius:16px;padding:14px 18px;margin:16px 0}
+.umq details{background:#FBF6EA;border-radius:12px;padding:10px 16px;margin:8px 0}
+.umq summary{cursor:pointer;font-weight:700;color:#14905A}
+.umq ol li,.umq ul li{margin-bottom:6px}
+.umq .yt{position:relative;padding-top:56.25%;border-radius:16px;overflow:hidden;background:#1D2A3A;margin:10px 0}
+.umq .yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.umq .note{font-size:14px;color:#6f675a}
+</style>
+<div class="umq">
+
+<h2>العجلة الدوّارة ودالة الجيب: ارتفاعك يرسم منحنى</h2>
+
+<p class="lead">مساء في موسم الرياض. تركب ريم وأخوها فهد عربة العجلة الدوّارة من منصة على ارتفاع مترين، وتبدأ العجلة تدور ببطء. بعد دقيقة يسأل فهد: «كم نحن الآن عن الأرض؟». تنظر ريم إلى الأضواء تحتها وتقول: «لا أعرف… لكننا نصعد أسرع من قبل!». هل هي محقّة؟ ومتى يصعد الراكب أسرع؟ هذه الحلقة تجيب بنموذج واحد: <span class="m">h(t) = 22 − 20cos(2πt/8)</span>.</p>
+
+<p class="note">الأرقام هنا مستديرة وتوضيحية، وليست لعجلة حقيقية: نصف القطر <span class="m">20 m</span>، وارتفاع المركز <span class="m">22 m</span>، والدورة الكاملة <span class="m">8 min</span>.</p>
+
+<h2>التطبيق</h2>
+<div class="app"><iframe src="https://ahmadaamri-code.github.io/umq/apps/ep-trig-ferris/" allow="fullscreen" loading="lazy" title="العجلة الدوّارة ودالة الجيب"></iframe></div>
+<p class="note">لا يظهر التطبيق؟ <a href="https://ahmadaamri-code.github.io/umq/apps/ep-trig-ferris/" target="_blank" rel="noopener">افتحه في صفحة مستقلة</a>.</p>
+
+<h2>طريقة الاستخدام</h2>
+<ol>
+ <li>تبدأ <b>جولة تلقائية</b>: مؤشر يمشي إلى الأزرار ويضغطها ويشرح. أي لمسة أو سحب يعطيك التحكم، وإذا تركت الصفحة <span class="m">25</span> ثانية تعود الجولة.</li>
+ <li><b>تشغيل/إيقاف</b> يدير العجلة، ومنزلق <b>الزمن <span class="m">t</span></b> هو المُدخل الوحيد: كل شكل ورقم في الصفحة يُحسب منه.</li>
+ <li>راقب <b>الخط الأفقي</b> الذي يصل الراكب (النقطة الخضراء) بنقطته على المنحنى: الارتفاع نفسه في اللحظة نفسها.</li>
+ <li>زر <b>إظهار نصف القطر والمثلث</b> يرسم المثلث القائم: الوتر <span class="m">r</span>، والضلع الرأسي <span class="m bl">r·cos θ</span>، والأفقي <span class="m rd">r·sin θ</span>.</li>
+ <li>جرّب الكاميرات: <b>أمامية</b> و<b>جانبية</b> و<b>داخل العربة</b> و<b>علوية</b>. اسحب لتدوير المشهد، واستعمل عجلة الفأرة أو إصبعين للتكبير.</li>
+ <li>في لوحة <b>اكسرها</b> غيّر <span class="m">r</span> و<span class="m">c</span> و<span class="m">T</span>، وقارن المنحنى الجديد بالمنحنى الأصلي المنقّط.</li>
+</ol>
+
+<h2>الرياضيات خطوة خطوة</h2>
+<h3>١) الزاوية من الزمن</h3>
+<p>تكمل العجلة دورة <span class="m">2π</span> في <span class="m">T = 8 min</span>، فالزاوية التي دارتها عربتنا من أسفل العجلة بعد <span class="m">t</span> دقيقة:</p>
+<div class="eq">θ = 2πt / T = 2πt / 8</div>
+
+<h3>٢) المثلث القائم</h3>
+<p>صِل المركز بالعربة: هذا نصف القطر <span class="m">r = 20</span> وهو الوتر. أسقِط عموداً من المركز إلى مستوى العربة: الضلع الرأسي <span class="m bl">r·cos θ</span> هو بُعد العربة <b>تحت</b> المركز (وإذا صار سالباً فالعربة فوق المركز)، والضلع الأفقي <span class="m rd">r·sin θ</span> هو بُعدها الأفقي عن المحور.</p>
+
+<h3>٣) الارتفاع</h3>
+<p>ارتفاع الراكب = ارتفاع المركز − بُعده تحت المركز:</p>
+<div class="eq">h(t) = c − r·cos θ = 22 − 20cos(2πt/8)</div>
+
+<h3>٤) نتحقق يدوياً</h3>
+<table>
+ <tr><th>t (min)</th><th>θ</th><th>cos θ</th><th>h (m)</th><th></th></tr>
+ <tr><td>0</td><td>0</td><td>1</td><td>22 − 20 = 2</td><td>أسفل العجلة</td></tr>
+ <tr><td>2</td><td>π/2</td><td>0</td><td>22 − 0 = 22</td><td>مستوى المركز</td></tr>
+ <tr><td>4</td><td>π</td><td>−1</td><td>22 + 20 = 42</td><td>القمة</td></tr>
+ <tr><td>6</td><td>3π/2</td><td>0</td><td>22</td><td>مستوى المركز</td></tr>
+ <tr><td>8</td><td>2π</td><td>1</td><td>2</td><td>دورة كاملة</td></tr>
+</table>
+
+<h3>٥) لماذا «دالة الجيب»؟</h3>
+<p>لأن <span class="m">−cos x = sin(x − π/2)</span>، فالنموذج نفسه يُكتب:</p>
+<div class="eq">h(t) = 22 + 20·sin(2πt/8 − π/2)</div>
+<p>أي منحنى جيب: <b>سعته</b> <span class="m">20</span> (نصف القطر)، و<b>خط وسطه</b> <span class="m">h = 22</span> (ارتفاع المركز)، و<b>دورته</b> <span class="m">8 min</span>، ومُزاح ربع دورة لأن الراكب يبدأ من الأسفل لا من مستوى المركز.</p>
+
+<div class="box">
+<h3 style="margin-top:0">توقّع قبل أن تكشف</h3>
+<p><b>متى يرتفع الراكب أسرع: قرب القمة أم عند مستوى المركز؟</b> اكتب توقّعك وسببه، ثم اضغط «اكشف» في التطبيق وانظر إلى ميل المنحنى.</p>
+<details><summary>الإجابة</summary>
+<p>عند <b>مستوى المركز</b>. ميل المنحنى هناك أكبر ما يكون: <span class="m gr">2πr/T = 2π·20/8 = 5π ≈ 15.7 m/min</span>، ويصغر كلما اقتربت العربة من القمة حتى يصير <span class="m">0</span> عندها. العربة تتحرك على الدائرة بسرعة ثابتة، لكن اتجاه حركتها عند مستوى المركز رأسي كله، وعند القمة أفقي كله. الخطأ الشائع أن «القمة أسرع» لأنها الأعلى، أو أن «السرعة ثابتة فالصعود ثابت».</p>
+</details>
+</div>
+
+<h2>نشاط للمعلم</h2>
+<p>حصة واحدة (٤٥ دقيقة) في مجموعات، مع التطبيق على جهاز لكل مجموعة:</p>
+<ol>
+ <li><b>احسب ثم تحقّق (١٠ د):</b> احسب <span class="m">h(1)</span> بالآلة، ثم حرّك منزلق الزمن إلى <span class="m">t = 1</span> وقارن.
+  <details><summary>الحل</summary><span class="m">h(1) = 22 − 20cos(π/4) ≈ 22 − 14.14 = 7.86 m</span></details></li>
+ <li><b>حلّ معادلة (١٠ د):</b> متى يبلغ الراكب <span class="m">32 m</span> أول مرة؟ وكم دقيقة يبقى فوق <span class="m">32 m</span> في كل دورة؟
+  <details><summary>الحل</summary><span class="m">22 − 20cos(πt/4) = 32 ⇒ cos(πt/4) = −0.5 ⇒ πt/4 = 2π/3 ⇒ t = 8/3 ≈ 2.67 min</span>. ويبقى فوقها من <span class="m">t = 8/3</span> إلى <span class="m">t = 16/3</span>، أي <span class="m">8/3 ≈ 2.67 min</span> من كل دورة.</details></li>
+ <li><b>اكسرها (١٠ د):</b> غيّر <span class="m">r</span> ثم <span class="m">c</span> ثم <span class="m">T</span> كلّاً على حدة، واكتب في جدول: ماذا تغيّر في المنحنى؟ (السعة، خط الوسط، الدورة). لماذا يرتفع المركز تلقائياً حين تكبّر <span class="m">r</span>؟</li>
+ <li><b>نموذج جديد (١٠ د):</b> عجلة نصف قطرها <span class="m">15 m</span>، ومركزها على <span class="m">17 m</span>، ودورتها <span class="m">6 min</span>. اكتب <span class="m">h(t)</span> وتحقق عند <span class="m">t = 0, 1.5, 3, 4.5, 6</span>، ثم أدخلها في التطبيق.
+  <details><summary>الحل</summary><span class="m">h(t) = 17 − 15cos(2πt/6)</span>، والقيم <span class="m">2, 17, 32, 17, 2</span>.</details></li>
+ <li><b>تذكرة خروج (٥ د):</b> «عند أي ارتفاع يكون ميل المنحنى أكبر؟ ولماذا؟» في جملتين.</li>
+</ol>
+
+<h2>الفيديو</h2>
+<!-- ضع رابط يوتيوب هنا: استبدل VIDEO_ID بمعرّف المقطع (ما بعد v= في الرابط) -->
+<div class="yt"><iframe src="https://www.youtube.com/embed/VIDEO_ID" title="العجلة الدوّارة ودالة الجيب — عُمق" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+
+<p class="note">من سلسلة «عُمق»: رياضيات تُفهَم… لا تُحفَظ. — أحمد عامري · <a href="https://ahmadaamri-code.github.io/umq/">كل التطبيقات</a> · <a href="https://www.youtube.com/@Knowledge-2040">يوتيوب</a></p>
+</div>
