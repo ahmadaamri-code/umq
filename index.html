@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>عُمق — رياضيات تُفهَم لا تُحفَظ</title>
+<meta name="description" content="تطبيقات تفاعلية تشرح الرياضيات من الحياة، من الابتدائي إلى الثانوي — أحمد عامري">
+<style>
+@font-face{font-family:Cairo;src:url(brand/fonts/cairo-arabic-700-normal.woff2);font-weight:700}
+@font-face{font-family:Cairo;src:url(brand/fonts/cairo-arabic-400-normal.woff2);font-weight:400}
+@font-face{font-family:Cairo;src:url(brand/fonts/cairo-latin-700-normal.woff2);font-weight:700;unicode-range:U+0000-00FF}
+:root{--ink:#1D2A3A;--green:#14905A;--mint:#3FD08C;--gold:#E0A526;--paper:#FBF6EA;--muted:#6f675a}
+*{box-sizing:border-box}
+body{margin:0;font-family:Cairo,Tahoma,sans-serif;color:var(--ink);background:var(--paper);
+ background-image:radial-gradient(circle at 15% 0,rgba(20,144,90,.10),transparent 45%),radial-gradient(circle at 100% 100%,rgba(31,111,209,.08),transparent 45%),radial-gradient(rgba(29,42,58,.08) 1.2px,transparent 1.3px);background-size:auto,auto,32px 32px}
+header{max-width:1000px;margin:0 auto;padding:40px 20px 10px;display:flex;align-items:center;gap:18px}
+header img{width:min(340px,70vw)}
+.wrap{max-width:1000px;margin:0 auto;padding:10px 20px 60px}
+h2{font-size:22px;margin:28px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:#fffdf7;border-radius:20px;padding:20px;box-shadow:0 10px 30px -12px rgba(60,40,10,.25);text-decoration:none;color:inherit;display:block;border:2px solid transparent}
+.card:hover{border-color:var(--green)}
+.tag{display:inline-block;font-size:12px;background:var(--ink);color:#fff;border-radius:20px;padding:2px 10px}
+.card h3{margin:10px 0 6px;font-size:20px}
+.card p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.soon{opacity:.55;pointer-events:none}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:20px}
+</style>
+</head>
+<body>
+<header><img src="brand/logo.png" alt="عُمق — رياضيات تُفهَم لا تُحفَظ"></header>
+<main class="wrap">
+ <p>تطبيقات تفاعلية تشرح الرياضيات من الحياة. حرّك، وتوقّع، واكسر النموذج… ثم افهم.</p>
+ <h2>الموسم الأول: من النمط إلى المماس</h2>
+ <div class="grid">
+  <a class="card" href="apps/ep06-slope/"><span class="tag">الحلقة ٦ · الثانوي</span><h3>ميل المستقيم</h3><p>لوحة طريق مكتوب عليها ٦٪… اسحب النقطتين واسمع الميل.</p></a>
+  <div class="card soon"><span class="tag">الحلقة ٧ · الثانوي</span><h3>معادلة المستقيم</h3><p>قريباً: رحلة طائرة تكشف المعادلة ما لم يذكره السؤال.</p></div>
+  <div class="card soon"><span class="tag">الحلقة ١ · الأولية</span><h3>أنماط تتكرر</h3><p>قريباً.</p></div>
+ </div>
+</main>
+<footer>أحمد عامري · <a href="https://ahmadaamry.blogspot.com">المدونة</a> · <a href="https://www.youtube.com/@Knowledge-2040">يوتيوب</a></footer>
+</body>
+</html>

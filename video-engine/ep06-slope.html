@@ -1,0 +1,338 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-arabic-400-normal.woff2);font-weight:400;unicode-range:U+0600-06FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-arabic-600-normal.woff2);font-weight:600;unicode-range:U+0600-06FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-arabic-700-normal.woff2);font-weight:700;unicode-range:U+0600-06FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-arabic-800-normal.woff2);font-weight:800;unicode-range:U+0600-06FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-latin-400-normal.woff2);font-weight:400;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-latin-600-normal.woff2);font-weight:600;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-latin-700-normal.woff2);font-weight:700;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-latin-800-normal.woff2);font-weight:800;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:"STIX Two Text";src:url(../brand/fonts/stix-two-text-latin-400-normal.woff2);font-weight:400;font-style:normal}
+@font-face{font-family:"STIX Two Text";src:url(../brand/fonts/stix-two-text-latin-600-normal.woff2);font-weight:600;font-style:normal}
+@font-face{font-family:"STIX Two Text";src:url(../brand/fonts/stix-two-text-latin-400-italic.woff2);font-weight:400;font-style:italic}
+@font-face{font-family:"STIX Two Text";src:url(../brand/fonts/stix-two-text-latin-600-italic.woff2);font-weight:600;font-style:italic}
+html,body{margin:0;background:#000;overflow:hidden}
+canvas{display:block}
+.pre{position:absolute;opacity:0;font-family:Cairo}
+</style></head><body>
+<canvas id="c"></canvas>
+<div class="pre" style="font-weight:400">ميل a</div><div class="pre" style="font-weight:700">ميل a</div><div class="pre" style="font-weight:800">ميل a</div><div class="pre" style="font-weight:600">ميل a</div>
+<div class="pre" style="font-family:'STIX Two Text'">m <i>m</i> <b>m</b> <b><i>m</i></b></div>
+<script>
+'use strict';
+const W=1920,H=1080; const cv=document.getElementById('c'); cv.width=W; cv.height=H; const c=cv.getContext('2d');
+const K={paper:'#fbf5e6',ink:'#2b2925',muted:'#8a806f',grid:'#e7dcc5',axis:'#5d5447',rise:'#1f6fd1',run:'#d6453d',slope:'#14905a',
+ pos:'#0f9d8a',neg:'#c2408a',zero:'#b08a12',undef:'#6b6b78',A:'#e0861a',B:'#7b4fd1',note:'#ffe98a',Q:'#7b4fd1',R:'#e0861a'};
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const P=(t,a,b)=>ease(cl((t-a)/(b-a)));
+const lin=(t,a,b)=>cl((t-a)/(b-a));
+const backE=x=>{x=cl(x);const c1=1.9,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
+const MI='−';
+const fm=n=>{const r=Math.round(n*100)/100; return (Object.is(r,-0)?0:r).toString().replace('-',MI)};
+const ISO=s=>'⁦'+s+'⁩';
+
+/* ---------- text ---------- */
+function ar(txt,x,y,size,col,{w=700,a=1,align='right'}={}){ if(a<=0) return; c.save(); c.globalAlpha*=a; c.direction='rtl'; c.textAlign=align; c.textBaseline='middle'; c.font=`${w} ${size}px Cairo`; c.fillStyle=col; c.fillText(txt,x,y); c.restore(); }
+function arW(txt,size,w=700){ c.save(); c.direction='rtl'; c.font=`${w} ${size}px Cairo`; const m=c.measureText(txt).width; c.restore(); return m; }
+// math rows: items {t,c,i(italic),b,sub,ar} or {fr:[row,row],c}
+const v=(t,col)=>({t,c:col,i:1}), n=(t,col,b)=>({t,c:col,b}), sb=(t,col)=>({t,c:col,sub:1}), aw=(t,col)=>({t,c:col,ar:1}), F=(a,b,col)=>({fr:[a,b],c:col});
+function fontFor(it,size){ if(it.ar) return `700 ${size*0.74}px Cairo`; const s=it.sub?size*0.62:size; return `${it.i?'italic ':''}${it.b?600:400} ${s}px "STIX Two Text"`; }
+function mW(it,size){ if(it.fr) return Math.max(rowW(it.fr[0],size*.86),rowW(it.fr[1],size*.86))+size*0.42; c.save(); c.font=fontFor(it,size); c.direction=it.ar?'rtl':'ltr'; const w=c.measureText(it.t).width; c.restore(); return w+(it.i?size*0.04:0); }
+function rowW(r,size){ return r.reduce((s,it)=>s+mW(it,size),0); }
+function drawRow(r,x,y,size,a){ let cx=x; for(const it of r){ const w=mW(it,size);
+  if(it.fr){ const s2=size*.86, nw=rowW(it.fr[0],s2), dw=rowW(it.fr[1],s2); drawRow(it.fr[0],cx+(w-nw)/2,y-size*0.58,s2,a); drawRow(it.fr[1],cx+(w-dw)/2,y+size*0.64,s2,a);
+   c.save(); c.globalAlpha*=a; c.strokeStyle=it.c||K.ink; c.lineWidth=Math.max(2,size*0.055); c.lineCap='round'; c.beginPath(); c.moveTo(cx+size*0.12,y+size*0.04); c.lineTo(cx+w-size*0.12,y+size*0.04); c.stroke(); c.restore(); }
+  else { c.save(); c.globalAlpha*=a; c.font=fontFor(it,size); c.fillStyle=it.c||K.ink; c.textBaseline='middle'; c.textAlign='left'; c.direction=it.ar?'rtl':'ltr'; if(it.ar){ c.textAlign='right'; c.fillText(it.t,cx+w,y+size*0.02); } else c.fillText(it.t,cx,y+(it.sub?size*0.28:0)); c.restore(); }
+  cx+=w; } }
+function row(r,x,y,size,{align='center',a=1}={}){ if(a<=0) return 0; const w=rowW(r,size); const lx=align==='center'?x-w/2:align==='right'?x-w:x; drawRow(r,lx,y,size,a); return w; }
+
+/* ---------- shapes ---------- */
+function arrow(x1,y1,x2,y2,col,w=6,head=20,a=1){ if(a<=0) return; const L=Math.hypot(x2-x1,y2-y1); if(L<1) return; const ang=Math.atan2(y2-y1,x2-x1); const hx=x2-Math.cos(ang)*head*0.8, hy=y2-Math.sin(ang)*head*0.8;
+ c.save(); c.globalAlpha*=a; c.strokeStyle=col; c.fillStyle=col; c.lineWidth=w; c.lineCap='round'; c.beginPath(); c.moveTo(x1,y1); c.lineTo(hx,hy); c.stroke();
+ if(L>head){ c.beginPath(); c.moveTo(x2,y2); c.lineTo(x2-head*Math.cos(ang-0.42),y2-head*Math.sin(ang-0.42)); c.lineTo(x2-head*Math.cos(ang+0.42),y2-head*Math.sin(ang+0.42)); c.closePath(); c.fill(); } c.restore(); }
+function dotP(x,y,col,r=13,s=1,a=1){ if(s<=0||a<=0) return; c.save(); c.globalAlpha*=a; c.translate(x,y); c.scale(s,s); c.fillStyle=col; c.globalAlpha*=0.18; c.beginPath(); c.arc(0,0,r+12,0,7); c.fill(); c.globalAlpha/=0.18; c.fillStyle=col; c.strokeStyle='#fff'; c.lineWidth=4; c.beginPath(); c.arc(0,0,r,0,7); c.fill(); c.stroke(); c.restore(); }
+function pill(x,y,w,h,fill,a=1,stroke){ c.save(); c.globalAlpha*=a; c.fillStyle=fill; c.beginPath(); c.roundRect(x,y,w,h,Math.min(h/2,22)); c.fill(); if(stroke){ c.strokeStyle=stroke; c.lineWidth=3; c.stroke(); } c.restore(); }
+function card(x,y,w,h,a=1,col='#fffdf7'){ if(a<=0) return; c.save(); c.globalAlpha*=a; c.shadowColor='rgba(60,40,10,.18)'; c.shadowBlur=30; c.shadowOffsetY=10; c.fillStyle=col; c.beginPath(); c.roundRect(x,y,w,h,26); c.fill(); c.restore(); }
+function G(ox,oy,u){ return {ox,oy,u,X:x=>ox+x*u,Y:y=>oy-y*u}; }
+function grid(g,R,a=1,labels=true){ if(a<=0) return; c.save(); c.globalAlpha*=a; c.strokeStyle=K.grid; c.lineWidth=2; c.beginPath();
+ for(let i=-R;i<=R;i++){ c.moveTo(g.X(i),g.Y(-R-.3)); c.lineTo(g.X(i),g.Y(R+.3)); c.moveTo(g.X(-R-.3),g.Y(i)); c.lineTo(g.X(R+.3),g.Y(i)); } c.stroke();
+ c.restore(); arrow(g.X(-R-.5),g.Y(0),g.X(R+.6),g.Y(0),K.axis,3,16,a); arrow(g.X(0),g.Y(-R-.5),g.X(0),g.Y(R+.6),K.axis,3,16,a);
+ if(labels){ c.save(); c.globalAlpha*=a; c.fillStyle=K.axis; c.font='italic 600 34px "STIX Two Text"'; c.textAlign='center'; c.textBaseline='middle'; c.fillText('x',g.X(R+.45),g.Y(-.6)); c.fillText('y',g.X(.55),g.Y(R+.35)); c.fillText('O',g.X(-.45),g.Y(-.5));
+  c.font='400 22px "STIX Two Text"'; c.fillStyle=K.muted; for(let i=-R+1;i<R;i++){ if(!i||i%2) continue; c.fillText(fm(i),g.X(i),g.Y(-.45)); c.fillText(fm(i),g.X(-.5),g.Y(i)); } c.restore(); } }
+function clipLine(p,d,R){ let t0=-1e9,t1=1e9; for(let k=0;k<2;k++){ if(Math.abs(d[k])<1e-9){ if(p[k]<-R||p[k]>R) return null; } else { let a=(-R-p[k])/d[k], b=(R-p[k])/d[k]; if(a>b)[a,b]=[b,a]; t0=Math.max(t0,a); t1=Math.min(t1,b); } }
+ let A=[p[0]+d[0]*t0,p[1]+d[1]*t0], B=[p[0]+d[0]*t1,p[1]+d[1]*t1]; if(A[0]>B[0]+1e-9||(Math.abs(A[0]-B[0])<1e-9&&A[1]<B[1]))[A,B]=[B,A]; return [A,B]; }
+function lineThrough(g,p,d,R,col,prog=1,w=7,glow=true,a=1){ const s=clipLine(p,d,R); if(!s||a<=0) return null; const [A,B]=s; const ax=g.X(A[0]),ay=g.Y(A[1]),bx=g.X(B[0]),by=g.Y(B[1]);
+ c.save(); c.globalAlpha*=a; c.strokeStyle=col; c.lineCap='round'; c.lineWidth=w; if(glow){ c.shadowColor=col; c.shadowBlur=16; }
+ const px=ax+(bx-ax)*prog, py=ay+(by-ay)*prog; c.beginPath(); c.moveTo(ax,ay); c.lineTo(px,py); c.stroke();
+ if(prog>0&&prog<1){ c.shadowBlur=30; c.fillStyle='#fff'; c.beginPath(); c.arc(px,py,12,0,7); c.fill(); c.fillStyle=col; c.beginPath(); c.arc(px,py,6,0,7); c.fill(); }
+ c.restore(); return s; }
+function tag(txt,x,y,col,size=30,a=1,math=true){ if(a<=0) return; c.save(); c.globalAlpha*=a; c.font=math?`600 ${size}px "STIX Two Text"`:`700 ${size}px Cairo`; c.direction=math?'ltr':'rtl'; const w=c.measureText(txt).width;
+ c.fillStyle='rgba(251,245,230,.92)'; c.beginPath(); c.roundRect(x-w/2-10,y-size*0.7,w+20,size*1.4,10); c.fill(); c.fillStyle=col; c.textAlign='center'; c.textBaseline='middle'; c.fillText(txt,x,y+1); c.restore(); }
+function truck(x,y,ang,s,a=1){ if(a<=0) return; c.save(); c.globalAlpha*=a; c.translate(x,y); c.rotate(ang); c.scale(s,s); c.fillStyle='#2d2d2d'; c.beginPath(); c.roundRect(-34,-30,46,26,3); c.fill(); c.beginPath(); c.roundRect(14,-22,20,18,4); c.fill();
+ c.fillStyle='#ffd84a'; c.fillRect(18,-19,10,8); for(const wx of [-22,22]){ c.fillStyle='#2d2d2d'; c.beginPath(); c.arc(wx,-3,8,0,7); c.fill(); c.fillStyle='#ffd84a'; c.beginPath(); c.arc(wx,-3,3,0,7); c.fill(); } c.restore(); }
+function check(x,y,s,col,a=1){ if(a<=0) return; c.save(); c.globalAlpha*=a; c.strokeStyle=col; c.lineWidth=9*s; c.lineCap='round'; c.lineJoin='round'; c.beginPath(); c.moveTo(x-22*s,y); c.lineTo(x-6*s,y+16*s); c.lineTo(x+24*s,y-18*s); c.stroke(); c.restore(); }
+function cross(x,y,s,col,a=1){ if(a<=0) return; c.save(); c.globalAlpha*=a; c.strokeStyle=col; c.lineWidth=9*s; c.lineCap='round'; c.beginPath(); c.moveTo(x-18*s,y-18*s); c.lineTo(x+18*s,y+18*s); c.moveTo(x+18*s,y-18*s); c.lineTo(x-18*s,y+18*s); c.stroke(); c.restore(); }
+function title(txt,lt,col=K.ink){ ar(txt,1820,118,62,col,{w:800,a:P(lt,0.15,0.7)}); c.save(); c.globalAlpha=P(lt,0.3,0.9); c.fillStyle=K.slope; const w=arW(txt,62,800)*P(lt,0.3,1); c.fillRect(1820-w,160,w,6); c.restore(); }
+function cap(txt,x,y,size,col,a,w=700){ ar(txt,x,y,size,col,{w,a}); }
+
+/* ================= scenes ================= */
+// ---- 1. hook ----
+function sHook(lt){
+ cap('لوحة على الطريق مكتوب عليها '+ISO('6%')+' … ماذا تعني؟',1820,120,60,K.ink,P(lt,0.2,0.8),800);
+ // sign
+ const s=backE(lin(lt,0.2,1.2)); const sx=420, sy=520;
+ if(s>0){ c.save(); c.translate(sx,sy); c.scale(s,s); c.fillStyle='#8f8f8f'; c.fillRect(-12,120,24,230); c.rotate(Math.PI/4); c.fillStyle='#ffd84a'; c.strokeStyle='#2d2d2d'; c.lineWidth=10; c.beginPath(); c.roundRect(-150,-150,300,300,26); c.fill(); c.stroke(); c.lineWidth=4; c.beginPath(); c.roundRect(-128,-128,256,256,18); c.stroke(); c.rotate(-Math.PI/4);
+  c.fillStyle='#2d2d2d'; c.beginPath(); c.moveTo(-110,10); c.lineTo(110,10); c.lineTo(110,-70); c.closePath(); c.fill(); truck(-10,-28,Math.atan2(-80,220),1.1); c.font='800 84px Cairo'; c.textAlign='center'; c.textBaseline='middle'; c.direction='ltr'; c.fillText('6%',0,95); c.restore(); }
+ // ramp to scale
+ const x0=860, x1=1780, yb=820, hh=(x1-x0)*0.06; const pr=P(lt,2.2,3.4);
+ c.save(); c.globalAlpha=pr; c.fillStyle='#d9cdb4'; c.beginPath(); c.moveTo(x0,yb); c.lineTo(x1,yb); c.lineTo(x1,yb-hh); c.closePath(); c.fill(); c.strokeStyle='#5b5246'; c.lineWidth=8; c.beginPath(); c.moveTo(x0,yb); c.lineTo(x1,yb-hh); c.stroke(); c.restore();
+ arrow(x0,yb+44,x0+(x1-x0)*P(lt,2.6,3.8),yb+44,K.run,6,22);
+ cap(ISO('100 m')+' أفقياً',(x0+x1)/2+90,yb+100,46,K.run,P(lt,3.3,3.9));
+ arrow(x1+44,yb,x1+44,yb-hh*P(lt,3.8,4.6),K.rise,6,18);
+ cap(ISO('6 m')+' رأسياً',x1+30,yb-hh-60,46,K.rise,P(lt,4.3,4.9));
+ const tp=P(lt,3.8,7.6); truck(x0+(x1-x0)*tp*0.94+20,yb-hh*tp*0.94-4,-Math.atan2(hh,x1-x0),1.25,pr);
+ row([F([n('6 m',K.rise)],[n('100 m',K.run)],K.ink),n(' = 0.06 = 6%',K.ink)],1320,380,78,{a:P(lt,5.6,6.3)});
+ cap('النسبة بين التغير الرأسي والتغير الأفقي اسمها: الميل',1820,560,48,K.slope,P(lt,6.8,7.5),800);
+}
+// ---- 2. two points ----
+const G2=G(600,575,52), PA=[-1,-2], PB=[3,3];
+function sTwo(lt){
+ title('الميل من نقطتين',lt); grid(G2,7,P(lt,0.1,0.9));
+ const g=G2; const pl=P(lt,3,4.6);
+ lineThrough(g,PA,[4,5],7.3,K.slope,pl);
+ // run & rise
+ const rp=P(lt,5,6.2), up=P(lt,7,8.2);
+ arrow(g.X(-1),g.Y(-2),g.X(-1+4*rp),g.Y(-2),K.run,7,22,rp>0?1:0);
+ tag('4',g.X(1),g.Y(-2)+36,K.run,38,P(lt,5.8,6.3)); ar('التغير الأفقي',g.X(1)+70,g.Y(-2)+86,32,K.run,{a:P(lt,6,6.5),align:'center'});
+ arrow(g.X(3),g.Y(-2),g.X(3),g.Y(-2+5*up),K.rise,7,22,up>0?1:0);
+ tag('5',g.X(3)+40,g.Y(1.3),K.rise,38,P(lt,7.8,8.3)); ar('التغير الرأسي',g.X(3)+70,g.Y(1.3)+50,32,K.rise,{a:P(lt,8,8.5),align:'left'});
+ dotP(g.X(-1),g.Y(-2),K.ink,14,backE(lin(lt,1.4,2))); dotP(g.X(3),g.Y(3),K.ink,14,backE(lin(lt,2.2,2.8)));
+ row([n('(',K.ink),v('x'),sb('1'),n(', '),v('y'),sb('1'),n(') = (−1, −2)')],g.X(-1)-36,g.Y(-2)+30,32,{a:P(lt,1.7,2.2),align:'right'});
+ row([n('(',K.ink),v('x'),sb('2'),n(', '),v('y'),sb('2'),n(') = (3, 3)')],g.X(3)-36,g.Y(3)-10,32,{a:P(lt,2.5,3),align:'right'});
+ // formulas
+ const fx=1440;
+ row([v('m',K.slope),n(' = '),F([aw('التغير الرأسي',K.rise)],[aw('التغير الأفقي',K.run)])],fx,330,64,{a:P(lt,9,9.6)});
+ row([v('m',K.slope),n(' = '),F([v('y',K.rise),sb('2',K.rise),n(' − ',K.rise),v('y',K.rise),sb('1',K.rise)],[v('x',K.run),sb('2',K.run),n(' − ',K.run),v('x',K.run),sb('1',K.run)])],fx,520,68,{a:P(lt,10.4,11)});
+ row([n('= '),F([n('3 − (−2)',K.rise)],[n('3 − (−1)',K.run)])],fx,700,68,{a:P(lt,11.8,12.4)});
+ const fp=P(lt,13.2,13.8); if(fp>0){ pill(fx-220,820,440,130,'rgba(20,144,90,.12)',fp,K.slope); row([n('= '),F([n('5',K.rise)],[n('4',K.run)]),n(' = 1.25',K.slope,1)],fx,885,70,{a:fp}); }
+}
+// ---- 3. any two points ----
+function sAny(lt){
+ title('أي نقطتين؟ الميل نفسه!',lt); const g=G2; grid(g,7,1); lineThrough(g,PA,[4,5],7.3,K.slope,1,7,false);
+ const keys=[[0,1,-1],[2,1,-1],[3.6,2,-3],[5.4,2,-3],[7,0.5,2],[8.6,0.5,2],[10.2,1.6,-4.4],[13,1.6,-4.4]];
+ let k=1,a=-1; for(let i=0;i<keys.length-1;i++){ const [t0,k0,a0]=keys[i],[t1,k1,a1]=keys[i+1]; if(lt>=t0&&lt<=t1){ const e=ease(cl((lt-t0)/(t1-t0))); k=k0+(k1-k0)*e; a=a0+(a1-a0)*e; } if(lt>keys[keys.length-1][0]){k=keys[keys.length-1][1];a=keys[keys.length-1][2];} }
+ const y0=1.25*a-0.75, run=4*k, rise=5*k, ap=P(lt,0.3,1);
+ c.save(); c.globalAlpha=0.13*ap; c.fillStyle=K.slope; c.beginPath(); c.moveTo(g.X(a),g.Y(y0)); c.lineTo(g.X(a+run),g.Y(y0)); c.lineTo(g.X(a+run),g.Y(y0+rise)); c.closePath(); c.fill(); c.restore();
+ arrow(g.X(a),g.Y(y0),g.X(a+run),g.Y(y0),K.run,7,20,ap); arrow(g.X(a+run),g.Y(y0),g.X(a+run),g.Y(y0+rise),K.rise,7,20,ap);
+ tag(fm(run),g.X(a+run/2),g.Y(y0)+34,K.run,36,ap); tag(fm(rise),g.X(a+run)+46,g.Y(y0+rise/2),K.rise,36,ap);
+ dotP(g.X(a),g.Y(y0),K.ink,11,ap); dotP(g.X(a+run),g.Y(y0+rise),K.ink,11,ap);
+ const fx=1400; card(1060,300,700,380,P(lt,0.5,1.1));
+ row([v('m',K.slope),n(' = '),F([n(fm(rise),K.rise)],[n(fm(run),K.run)]),n(' = '),n('1.25',K.slope,1)],fx,480,96,{a:P(lt,0.7,1.2)});
+ cap('المثلث يكبر ويصغر… والنسبة لا تتغيّر',1820,790,48,K.ink,P(lt,10.3,10.9),800);
+ cap('لأن المستقيم له انحدار واحد في كل مكان',1820,870,42,K.muted,P(lt,11,11.6),600);
+}
+// ---- 4. four cases ----
+const CASES=[['pos','موجب','يصعد من اليسار إلى اليمين'],['neg','سالب','ينزل من اليسار إلى اليمين'],['zero','صفر','أفقي: لا تغيّر رأسياً'],['undef','غير معرّف','رأسي: التغير الأفقي صفر']];
+function caseVec(lt){ // returns [run,rise,case]
+ const seq=[[0,4,3],[3.2,4,3],[4.2,4,-3],[6,4,-3],[7,4,0],[8.4,4,0],[9.2,4,4],[9.8,4,4],[10.4,2,4],[11,2,4],[11.6,1,4],[12.2,1,4],[12.8,0.5,4],[13.4,0.5,4],[14,0,4],[16,0,4]];
+ let r=4,h=3; for(let i=0;i<seq.length-1;i++){ const [t0,r0,h0]=seq[i],[t1,r1,h1]=seq[i+1]; if(lt>=t0&&lt<t1){ const e=ease(cl((lt-t0)/(t1-t0))); const A0=Math.atan2(h0,r0),A1=Math.atan2(h1,r1); if(Math.abs(r0-r1)<1e-9||Math.abs(h0-h1)<1e-9&&false){}
+   if(h0!==h1&&r0===r1&&!(h0===0||h1===0)&&t0<8){ const ang=A0+(A1-A0)*e; r=4; h=4*Math.tan(ang); } else { r=r0+(r1-r0)*e; h=h0+(h1-h0)*e; } } }
+ if(lt>=16){r=0;h=4;}
+ const cs= r<1e-6?'undef': Math.abs(h)<1e-6?'zero': h>0?'pos':'neg'; return [r,h,cs]; }
+function sCases(lt){
+ title('أربع حالات للميل',lt); const g=G2; grid(g,7,1);
+ const [r,h,cs]=caseVec(lt); const col=K[cs];
+ const d=[r,h]; lineThrough(g,[0,0],d,7.3,col,1,8);
+ const sc=Math.min(1,5/Math.max(Math.abs(r),Math.abs(h)))*1; const R1=r*sc, H1=h*sc;
+ // triangle from origin
+ if(lt<8.4){ arrow(g.X(0),g.Y(0),g.X(R1),g.Y(0),K.run,6,18); if(Math.abs(H1)>0.05) arrow(g.X(R1),g.Y(0),g.X(R1),g.Y(H1),K.rise,6,18); }
+ else { arrow(g.X(0),g.Y(0),g.X(r),g.Y(0),K.run,6,18,r>0.02?1:0); arrow(g.X(r),g.Y(0),g.X(r),g.Y(4),K.rise,6,18); }
+ // ball
+ let bp=null; const L=7; const ud=Math.hypot(r,h)||1; const dir=[r/ud,h/ud];
+ const ballAt=(s)=>{ const top=h>=0?1:-1; return [dir[0]*s*top*-1*-1, dir[1]*s]; };
+ let s=0; // param along line from upper end (s=-? ) define: upper point = +dir*5 if h>0 else -dir*5
+ const up = h>0? [dir[0]*5.2,dir[1]*5.2] : h<0? [-dir[0]*5.2,-dir[1]*5.2] : [0,0];
+ const roll=(t0,t1)=>{ const q=cl((lt-t0)/(t1-t0)); return q*q*10.4; };
+ let pos;
+ if(lt<3.2){ const q=roll(0.8,3.0); pos=[up[0]-Math.sign(up[0]||1)*0+(-up[0]/5.2)*q, up[1]+(-up[1]/5.2)*q]; }
+ else if(lt<6.2&&lt>=4.2){ const q=roll(4.3,6.1); pos=[up[0]+(-up[0]/5.2)*q, up[1]+(-up[1]/5.2)*q]; }
+ else if(cs==='zero'||lt<8.4){ pos= cs==='zero'?[-2+Math.sin(lt*3)*0.05,0]:null; }
+ if(lt>=14.2){ const q=cl((lt-14.2)/0.8); pos=[0,5.2-q*q*10.4]; }
+ if(pos&&Math.abs(pos[0])<7.2&&Math.abs(pos[1])<7.2){ let nx=-dir[1], ny=dir[0]; if(ny<0){nx=-nx;ny=-ny;} if(cs==='undef'){nx=1;ny=0;} const bx=g.X(pos[0])+nx*20, by=g.Y(pos[1])-ny*20;
+  c.save(); c.fillStyle='#f0a63a'; c.strokeStyle='#7a4a10'; c.lineWidth=4; c.beginPath(); c.arc(bx,by,20,0,7); c.fill(); c.stroke(); c.restore(); }
+ // right panel
+ const active={pos:0,neg:1,zero:2,undef:3}[cs];
+ CASES.forEach(([k,nm,desc],i)=>{ const y=280+i*118, on=i===active, a=P(lt,0.3+i*0.15,0.8+i*0.15)*(on?1:0.38);
+  pill(1080,y-46,740,96,on?'rgba(255,255,255,.95)':'rgba(255,255,255,.5)',a,on?K[k]:null);
+  // icon
+  c.save(); c.globalAlpha=a; c.strokeStyle=K[k]; c.lineWidth=7; c.lineCap='round'; const ix=1150, iy=y; const ic={pos:[[-26,22],[26,-22]],neg:[[-26,-22],[26,22]],zero:[[-28,8],[28,8]],undef:[[10,-28],[10,28]]}[k]; c.beginPath(); c.moveTo(ix+ic[0][0],iy+ic[0][1]); c.lineTo(ix+ic[1][0],iy+ic[1][1]); c.stroke(); c.restore();
+  ar(nm,1790,y-14,40,K[k],{a,w:800}); ar(desc,1790-arW(nm,40,800)-24,y-10,30,K.ink,{a,w:600}); });
+ // readout
+ const ra=P(lt,0.8,1.3); let rr;
+ if(lt<8.4){ const hh=Math.round(h*100)/100; rr=[v('m',K.slope),n(' = '),F([n(fm(h<0?-3:h>0?3:0)===fm(hh)?fm(hh):fm(hh),K.rise)],[n('4',K.run)]),n(' = '+fm(hh/4),K.slope,1)]; }
+ else { rr= r>1e-6? [v('m',K.slope),n(' = '),F([n('4',K.rise)],[n(fm(r),K.run)]),n(' = '+fm(4/r),K.slope,1)] : [v('m',K.slope),n(' = '),F([n('4',K.rise)],[n('0',K.run)])]; }
+ const sh= (r<1e-6&&lt>13.9)? Math.sin(lt*40)*6*Math.max(0,1-(lt-14)*1.5):0;
+ row(rr,1440+sh,820,76,{a:ra});
+ if(r<1e-6&&lt>13.9) ar('غير معرّف: لا نقسم على صفر!',1820,950,46,K.undef,{a:P(lt,14,14.5),w:800});
+ else if(lt>8.6) ar('التغير الأفقي يصغر… والميل يكبر',1820,950,40,K.muted,{a:P(lt,8.8,9.3)*(1-P(lt,13.5,13.9)),w:600});
+}
+// ---- 5. mistake ----
+function sMistake(lt){
+ title('خطأ شائع: ترتيب النقطتين',lt); const g=G(480,600,48); grid(g,6,P(lt,0.1,0.8));
+ lineThrough(g,[3,5],[5,3],6.3,K.slope,P(lt,0.5,1.5),6);
+ dotP(g.X(3),g.Y(5),K.Q,13,backE(lin(lt,0.8,1.3))); dotP(g.X(-2),g.Y(2),K.R,13,backE(lin(lt,1,1.5)));
+ tag('Q(3, 5)',g.X(3)-10,g.Y(5)-44,K.Q,32,P(lt,1,1.4)); tag('R(−2, 2)',g.X(-2)-10,g.Y(2)-44,K.R,32,P(lt,1.2,1.6));
+ cap('المستقيم يصعد ← ميله موجب',g.X(0)+300,g.Y(-6)+60,38,K.slope,P(lt,7.4,8),800);
+ // cards
+ const cx=1040, cw=800;
+ card(cx,220,cw,290,P(lt,1.4,2)); card(cx,540,cw,290,P(lt,2.6,3.2));
+ ar('خالد',cx+cw-36,268,40,K.ink,{a:P(lt,1.6,2.1),w:800}); ar('طارق',cx+cw-36,588,40,K.ink,{a:P(lt,2.8,3.3),w:800});
+ const k1=[v('m',K.slope),n(' = '),F([n('5',K.Q,1),n(' − '),n('2',K.R)],[n('−2',K.R,1),n(' − '),n('3',K.Q)]),n(' = −'),F([n('3')],[n('5')])];
+ const k2=[v('m',K.slope),n(' = '),F([n('5',K.Q,1),n(' − '),n('2',K.R)],[n('3',K.Q,1),n(' − (',K.ink),n('−2',K.R),n(')')]),n(' = '),F([n('3')],[n('5')])];
+ row(k1,cx+cw/2+30,350,58,{a:P(lt,1.8,2.4)}); row(k2,cx+cw/2+30,670,58,{a:P(lt,3,3.6)});
+ const h1=P(lt,4.6,5.1); cross(cx+70,350,1.2,K.run,h1); ar('بدأ البسط بالنقطة '+ISO('Q')+' والمقام بالنقطة '+ISO('R'),cx+cw-36,465,32,K.run,{a:P(lt,5,5.5),w:700});
+ const h2=P(lt,6.2,6.7); check(cx+70,670,1.3,K.slope,h2); ar('بدأ بالنقطة '+ISO('Q')+' في البسط والمقام',cx+cw-36,785,32,K.slope,{a:P(lt,6.6,7.1),w:700});
+ const rp=P(lt,8.8,9.5); if(rp>0){ pill(940,880,900,96,K.slope,rp); ar('القاعدة: ابدأ بالنقطة نفسها في البسط والمقام',1810,928,36,'#fff',{a:rp,w:800}); }
+}
+// ---- 6. parallel & perpendicular ----
+function sPar(lt){
+ title('التوازي والتعامد',lt); const g=G2; grid(g,7,1);
+ // l: through (-2,-4) slope 4
+ lineThrough(g,[-2,-4],[1,4],7.3,K.A,P(lt,0.3,1.3),7);
+ const t1=P(lt,0.9,1.5); arrow(g.X(-2),g.Y(-4),g.X(-1),g.Y(-4),K.run,6,16,t1); arrow(g.X(-1),g.Y(-4),g.X(-1),g.Y(0),K.rise,6,16,t1); tag('1',g.X(-1.5),g.Y(-4)+30,K.run,30,t1); tag('4',g.X(-1)+30,g.Y(-2),K.rise,30,t1);
+ // copy slides from l to x+5 offset, then rotates around pivot (3,0)
+ const slide=P(lt,2,3.6), rot=P(lt,6,8.4), ca=P(lt,1.8,2.2);
+ const off=5*slide; // l pivot at (-2,0) on l (y=4x+8? check: l: y+4=4(x+2) -> y=4x+4; at y=0 x=-1) use pivot (-1,0)
+ const pv=[-1+4*slide,0]; const ang=-Math.PI/2*rot; const rv=(vx,vy)=>[vx*Math.cos(ang)-vy*Math.sin(ang),vx*Math.sin(ang)+vy*Math.cos(ang)];
+ const dr=rv(1,4); lineThrough(g,pv,dr,7.3,K.B,1,7,true,ca);
+ const e1=rv(1,0), e2=rv(1,4);
+ arrow(g.X(pv[0]),g.Y(pv[1]),g.X(pv[0]+e1[0]),g.Y(pv[1]+e1[1]),K.run,6,16,ca); arrow(g.X(pv[0]+e1[0]),g.Y(pv[1]+e1[1]),g.X(pv[0]+e2[0]),g.Y(pv[1]+e2[1]),K.rise,6,16,ca);
+ dotP(g.X(pv[0]),g.Y(pv[1]),K.B,9,ca);
+ if(rot>0.98){ // right angle at intersection of y=4x+4 and line through pv dir (4,-1)
+  const m2=-1/4; const x=(pv[1]-m2*pv[0]-4)/(4-m2), y=4*x+4; const u1=[1/Math.hypot(1,4),4/Math.hypot(1,4)], u2=[4/Math.hypot(4,1),-1/Math.hypot(4,1)]; const s=0.5;
+  c.save(); c.globalAlpha=P(lt,8.6,9); c.strokeStyle=K.slope; c.lineWidth=5; c.beginPath(); c.moveTo(g.X(x+u1[0]*s),g.Y(y+u1[1]*s)); c.lineTo(g.X(x+u1[0]*s+u2[0]*s),g.Y(y+u1[1]*s+u2[1]*s)); c.lineTo(g.X(x+u2[0]*s),g.Y(y+u2[1]*s)); c.stroke(); c.restore(); }
+ // texts
+ const fx=1440;
+ row([v('m',K.A),sb('1',K.A),n(' = 4')],fx,290,66,{a:P(lt,1.2,1.7)});
+ const pa=P(lt,3.6,4.2)*(1-P(lt,5.6,6));
+ row([v('m',K.B),sb('2',K.B),n(' = 4')],fx,410,66,{a:pa}); cap('الميل نفسه ← متوازيان',1820,540,48,K.A,pa,800);
+ const qa=P(lt,8.4,9);
+ cap('دوّرنا المثلث '+ISO('90°')+': الأفقي صار رأسياً والإشارة انقلبت',1820,420,36,K.ink,P(lt,6.4,7),700);
+ row([v('m',K.B),sb('2',K.B),n(' = −'),F([n('1',K.run)],[n('4',K.rise)])],fx,560,66,{a:qa});
+ const fa=P(lt,9.6,10.2); if(fa>0){ pill(fx-330,690,660,130,'rgba(20,144,90,.12)',fa,K.slope); row([n('4 × (−'),F([n('1')],[n('4')]),n(') = −1')],fx,755,66,{a:fa}); }
+ cap('حاصل الضرب '+ISO('−1')+' ← متعامدان',1820,900,48,K.slope,P(lt,10.6,11.2),800);
+}
+// ---- 7. summary ----
+function sSum(lt){
+ const a=P(lt,0.1,0.6); card(170,150,1580,800,a);
+ ar('الخلاصة',1690,230,64,K.ink,{a,w:800});
+ row([v('m',K.slope),n(' = '),F([v('y',K.rise),sb('2',K.rise),n(' − ',K.rise),v('y',K.rise),sb('1',K.rise)],[v('x',K.run),sb('2',K.run),n(' − ',K.run),v('x',K.run),sb('1',K.run)])],960,370,80,{a:P(lt,0.6,1.1)});
+ CASES.forEach(([k,nm],i)=>{ const x=1500-i*360, y=580, aa=P(lt,1.4+i*0.25,1.9+i*0.25); c.save(); c.globalAlpha=aa; c.strokeStyle=K[k]; c.lineWidth=9; c.lineCap='round'; const ic={pos:[[-50,40],[50,-40]],neg:[[-50,-40],[50,40]],zero:[[-56,10],[56,10]],undef:[[0,-50],[0,50]]}[k]; c.beginPath(); c.moveTo(x+ic[0][0],y+ic[0][1]); c.lineTo(x+ic[1][0],y+ic[1][1]); c.stroke(); c.restore(); ar(nm,x,y+90,40,K[k],{a:aa,w:800,align:'center'}); });
+ row([n('∥ : ',K.A),v('m'),sb('1'),n(' = '),v('m'),sb('2')],1300,820,64,{a:P(lt,2.8,3.3)});
+ row([n('⊥ : ',K.slope),v('m'),sb('1'),n(' × '),v('m'),sb('2'),n(' = −1')],640,820,64,{a:P(lt,3.2,3.7)});
+ ar('الدرس 2-4 · ميل المستقيم',960,1000,34,K.muted,{a:P(lt,4,4.5),w:600,align:'center'});
+}
+
+const SC_CORE=[[sHook,9],[sTwo,15],[sAny,13],[sCases,16],[sMistake,12],[sPar,14],[sSum,8]];
+const EP={title:'ميل المستقيم',sub:'الدرس 2-4 · الحلقة 1',next:'الحلقة التالية: معادلة المستقيم'};
+/* ================= brand: «عُمق» ================= */
+const BR={name:'عُمق',tag:'رياضيات تُفهَم… لا تُحفَظ',navy:'#16222f',navy2:'#22344a',green:'#14905a',mint:'#3fd08c',gold:'#e0a526',blue:'#1f6fd1',red:'#d6453d',paper:'#fbf6ea',ink:'#1d2a3a'};
+const bgc=document.createElement('canvas'); bgc.width=W; bgc.height=H; const bx=bgc.getContext('2d');
+function blob(ctx,x,y,r,col){ const g=ctx.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,col); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.fillRect(x-r,y-r,2*r,2*r); }
+function paintBG(ctx,T,dark=false){
+ const g=ctx.createLinearGradient(0,0,W,H);
+ if(dark){ g.addColorStop(0,'#1a2838'); g.addColorStop(1,'#0f1822'); } else { g.addColorStop(0,'#fdf9f0'); g.addColorStop(1,'#f2e8d4'); }
+ ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+ const s=Math.sin, q=T*0.25;
+ if(dark){ blob(ctx,420+60*s(q),300+40*s(q*1.3),760,'rgba(63,208,140,.16)'); blob(ctx,1560+50*s(q*0.8),820,720,'rgba(31,111,209,.20)'); blob(ctx,1700,120,520,'rgba(224,165,38,.10)'); }
+ else { blob(ctx,240+60*s(q),140+40*s(q*1.3),760,'rgba(20,144,90,.10)'); blob(ctx,1760+40*s(q*0.7),1000,760,'rgba(31,111,209,.075)'); blob(ctx,1720+30*s(q*1.1),60,560,'rgba(224,165,38,.10)'); }
+ ctx.fillStyle=dark?'rgba(255,255,255,.07)':'rgba(29,42,58,.075)';
+ for(let y=18;y<H;y+=36) for(let x=18;x<W;x+=36){ ctx.fillRect(x-1.3,y-1.3,2.6,2.6); }
+ // watermark mark (bottom-right, very faint)
+ ctx.save(); ctx.globalAlpha=dark?0.06:0.035; ctx.translate(1700,880); ctx.strokeStyle=dark?'#fff':BR.ink; ctx.lineWidth=14; ctx.lineCap='round';
+ ctx.beginPath(); ctx.moveTo(-260,170); ctx.lineTo(200,-200); ctx.stroke(); ctx.lineWidth=10; ctx.beginPath(); ctx.moveTo(-90,30); ctx.lineTo(80,30); ctx.lineTo(80,-104); ctx.stroke(); ctx.restore();
+ ctx.save(); ctx.strokeStyle=dark?'rgba(255,255,255,.08)':'rgba(29,42,58,.08)'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(18,18,W-36,H-36,28); ctx.stroke(); ctx.restore();
+}
+function logoMark(ctx,x,y,s,p=1,{dark=false,alpha=1}={}){ if(alpha<=0) return; const sq=backE(cl(p/0.3)); if(sq<=0) return;
+ ctx.save(); ctx.globalAlpha*=alpha; ctx.translate(x,y); ctx.scale(sq,sq);
+ const r=s*0.24, h=s/2; const g=ctx.createLinearGradient(-h,-h,h,h); g.addColorStop(0,BR.navy2); g.addColorStop(1,BR.navy);
+ ctx.shadowColor='rgba(10,20,30,.35)'; ctx.shadowBlur=s*0.18; ctx.shadowOffsetY=s*0.06; ctx.fillStyle=g; ctx.beginPath(); ctx.roundRect(-h,-h,s,s,r); ctx.fill(); ctx.shadowColor='transparent'; ctx.shadowOffsetY=0;
+ ctx.strokeStyle='rgba(255,255,255,.10)'; ctx.lineWidth=Math.max(1,s*0.012); ctx.beginPath(); for(let k=1;k<4;k++){ const v=-h+k*s/4; ctx.moveTo(v,-h+s*0.12); ctx.lineTo(v,h-s*0.12); ctx.moveTo(-h+s*0.12,v); ctx.lineTo(h-s*0.12,v); } ctx.stroke();
+ const A=[-s*0.26,s*0.20], B=[s*0.24,-s*0.24]; const lp=ease(cl((p-0.25)/0.35));
+ const L0=[-s*0.36,s*0.29], L1=[s*0.34,-s*0.33];
+ ctx.lineCap='round'; ctx.strokeStyle=BR.mint; ctx.lineWidth=s*0.075; ctx.shadowColor=BR.mint; ctx.shadowBlur=s*0.12;
+ ctx.beginPath(); ctx.moveTo(L0[0],L0[1]); ctx.lineTo(L0[0]+(L1[0]-L0[0])*lp,L0[1]+(L1[1]-L0[1])*lp); ctx.stroke(); ctx.shadowBlur=0;
+ const tp=ease(cl((p-0.55)/0.25)), up=ease(cl((p-0.72)/0.25));
+ if(tp>0){ ctx.strokeStyle='#ff7a6b'; ctx.lineWidth=s*0.05; ctx.beginPath(); ctx.moveTo(A[0],A[1]); ctx.lineTo(A[0]+(B[0]-A[0])*tp,A[1]); ctx.stroke(); }
+ if(up>0){ ctx.strokeStyle='#66a8ff'; ctx.lineWidth=s*0.05; ctx.beginPath(); ctx.moveTo(B[0],A[1]); ctx.lineTo(B[0],A[1]+(B[1]-A[1])*up); ctx.stroke(); }
+ if(lp>0.3){ ctx.fillStyle='#fff'; for(const P0 of [A,B]){ ctx.beginPath(); ctx.arc(P0[0],P0[1],s*0.045,0,7); ctx.fill(); } }
+ ctx.restore(); }
+function wordmark(ctx,x,y,size,col,align='center',a=1){ if(a<=0) return; ctx.save(); ctx.globalAlpha*=a; ctx.direction='rtl'; ctx.textAlign=align; ctx.textBaseline='middle'; ctx.font=`800 ${size}px Cairo`; ctx.fillStyle=col; ctx.fillText(BR.name,x,y); ctx.restore(); }
+// ---- intro / outro ----
+function sIntro(lt){
+ c.drawImage(bgc,0,0); // already dark (see draw)
+ logoMark(c,960,380,230,cl(lt/1.6),{dark:true});
+ wordmark(c,960,590,120,'#ffffff','center',P(lt,1.2,1.8));
+ ar(BR.tag,960,690,40,'#a9d8c1',{a:P(lt,1.6,2.2),w:600,align:'center'});
+ const ea=P(lt,2.2,2.8); if(ea>0){ c.save(); c.globalAlpha=ea; c.font='800 46px Cairo'; c.direction='rtl'; const w=c.measureText(EP.title).width+80; c.fillStyle=BR.gold; c.beginPath(); c.roundRect(960-w/2,780,w,84,42); c.fill(); c.restore();
+  ar(EP.title,960,823,46,BR.navy,{a:ea,w:800,align:'center'}); ar(EP.sub,960,915,30,'rgba(255,255,255,.7)',{a:P(lt,2.5,3),w:600,align:'center'}); }
+}
+function sOutro(lt){
+ logoMark(c,960,360,190,cl(lt/1.4));
+ wordmark(c,960,540,104,BR.ink,'center',P(lt,1,1.5));
+ ar(BR.tag,960,630,40,BR.green,{a:P(lt,1.4,1.9),w:700,align:'center'});
+ c.save(); c.globalAlpha=P(lt,1.8,2.3); c.fillStyle='rgba(29,42,58,.12)'; c.fillRect(760,700,400,3); c.restore();
+ ar(EP.next,960,770,34,K.muted,{a:P(lt,2.1,2.6),w:600,align:'center'});
+}
+const SCX=[[sIntro,3.6],...SC_CORE,[sOutro,4.5]];
+const SC=SCX;
+const START=[]; {let s=0; for(const x of SC){ START.push(s); s+=x[1]; } }
+const TOTAL=START[START.length-1]+SC[SC.length-1][1];
+function brandChrome(si,lt,dur){
+ logoMark(c,74,70,56,1); wordmark(c,116,72,38,BR.ink,'left');
+ ar(EP.title+' · '+EP.sub,1820,1042,24,K.muted,{w:600});
+ const core=SC.length-2; for(let i=1;i<=core;i++){ const x=110+(i-1)*58; const f= i<si?1: i>si?0: cl(lt/dur);
+  c.fillStyle='rgba(29,42,58,.09)'; c.beginPath(); c.roundRect(x,1036,46,8,4); c.fill();
+  if(f>0){ const gr=c.createLinearGradient(x,0,x+46,0); gr.addColorStop(0,BR.green); gr.addColorStop(1,BR.mint); c.fillStyle=gr; c.beginPath(); c.roundRect(x,1036,46*f,8,4); c.fill(); } }
+}
+window.draw=function(T){ let si=SC.length-1; for(let i=0;i<SC.length;i++){ if(T<START[i]+SC[i][1]){ si=i; break; } } const lt=T-START[si], dur=SC[si][1];
+ const dark = si===0; paintBG(bx,T,dark);
+ c.setTransform(1,0,0,1,0,0); c.globalAlpha=1; c.drawImage(bgc,0,0); SC[si][0](lt);
+ const fade=Math.min(1,cl(lt/0.4), cl((dur-lt)/0.4));
+ if(si===0){ const f2=cl((dur-lt)/0.5); if(f2<1){ paintBG(bx,T,false); c.globalAlpha=1-f2; c.drawImage(bgc,0,0); c.globalAlpha=1; } }
+ else if(fade<1 && !(si===SC.length-1 && lt>dur-0.4)){ c.globalAlpha=1-fade; c.drawImage(bgc,0,0); c.globalAlpha=1; }
+ if(si>0 && si<SC.length-1) brandChrome(si,lt,dur);
+ if(si===SC.length-1 && lt>dur-0.6){ c.fillStyle='#fbf6ea'; c.globalAlpha=cl((lt-(dur-0.6))/0.6); c.fillRect(0,0,W,H); c.globalAlpha=1; }
+};
+// ---- identity board & exports ----
+window.board=function(){ paintBG(bx,0,false); c.setTransform(1,0,0,1,0,0); c.globalAlpha=1; c.drawImage(bgc,0,0);
+ card(90,90,1740,900,1);
+ // left: logo block (dark panel)
+ c.save(); const g=c.createLinearGradient(130,130,800,950); g.addColorStop(0,'#1d2d40'); g.addColorStop(1,'#101a25'); c.fillStyle=g; c.beginPath(); c.roundRect(130,130,700,820,26); c.fill(); c.restore();
+ c.save(); c.beginPath(); c.roundRect(130,130,700,820,26); c.clip(); blob(c,300,260,500,'rgba(63,208,140,.18)'); blob(c,760,900,500,'rgba(31,111,209,.22)'); c.restore();
+ logoMark(c,480,390,250,1,{dark:true}); wordmark(c,480,620,130,'#fff'); ar(BR.tag,480,720,38,'#a9d8c1',{w:600,align:'center'});
+ ar('هوية بصرية لمقاطع الرياضيات',480,880,28,'rgba(255,255,255,.55)',{w:600,align:'center'});
+ // right: palette
+ ar('الهوية البصرية',1780,180,56,BR.ink,{w:800});
+ ar('الألوان',1780,270,32,K.muted,{w:700});
+ const sw=[['حبر',BR.ink],['أخضر الميل',BR.green],['نعناع',BR.mint],['أزرق رأسي',BR.blue],['أحمر أفقي',BR.red],['ذهبي',BR.gold],['ورق',BR.paper]];
+ sw.forEach(([nm,col],i)=>{ const x=1780-i*128-110, y=300; c.save(); c.fillStyle=col; c.strokeStyle='rgba(0,0,0,.08)'; c.lineWidth=2; c.beginPath(); c.roundRect(x,y,110,110,20); c.fill(); c.stroke(); c.restore();
+  ar(nm,x+55,y+136,20,BR.ink,{w:700,align:'center'}); c.save(); c.font='400 18px "STIX Two Text"'; c.fillStyle=K.muted; c.textAlign='center'; c.fillText(col.toUpperCase(),x+55,y+164); c.restore(); });
+ ar('الخطوط',1780,520,32,K.muted,{w:700});
+ ar('Cairo — للنصوص العربية',1780,580,40,BR.ink,{w:800});
+ c.save(); c.font='italic 400 40px "STIX Two Text"'; c.fillStyle=BR.ink; c.textAlign='right'; c.direction='ltr'; c.fillText('y = mx + b',1780,650); c.restore(); ar('STIX Two — للرموز الرياضية',1500,646,26,K.muted,{w:600});
+ ar('قاعدة الألوان: الأزرق للتغير الرأسي، والأحمر للأفقي، والأخضر للميل',1780,740,28,BR.ink,{w:600});
+ ar('الخلفية: ورق دافئ، شبكة نقاط، وهج أخضر وأزرق وذهبي',1780,790,28,BR.ink,{w:600});
+ // mini lower bar sample
+ c.save(); c.fillStyle='rgba(29,42,58,.05)'; c.beginPath(); c.roundRect(880,850,900,90,20); c.fill(); c.restore();
+ logoMark(c,930,895,50,1); wordmark(c,970,897,34,BR.ink,'left'); ar('ميل المستقيم · الحلقة 1',1750,897,26,K.muted,{w:600});
+};
+window.bgOnly=function(){ paintBG(bx,0,false); c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,W,H); c.drawImage(bgc,0,0); logoMark(c,74,70,56,1); wordmark(c,116,72,38,BR.ink,'left'); };
+window.logoOnly=function(){ c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,W,H); logoMark(c,640,540,520,1); wordmark(c,1300,560,300,BR.ink); ar(BR.tag,1300,760,60,BR.green,{w:700,align:'center'}); };
+
+window.META={START,DUR:SC.map(x=>x[1]),TOTAL};
+document.fonts.ready.then(()=>{ window.READY=true; draw(0); });
+</script></body></html>
