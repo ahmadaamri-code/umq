@@ -40,5 +40,6 @@
 ## الحلقات المنتجة
 - ٦: ميل المستقيم — التطبيق `apps/ep06-slope/`، الفيديو `video-engine/ep06-slope.html`.
 - ٧: معادلة المستقيم — الفيديو `video-engine/ep07-line-equation.html` (التطبيق لم يُبنَ بعد).
+- العجلة الدوّارة ودالة الجيب (ثانوي) — التطبيق `apps/ep-trig-ferris/` (Three.js r128، جولة ذاتية = دالة نقية لزمن الجولة، `?video=1` لوضع الفيديو)، اللقطات `video-engine/stills_ferris.py`، الفيديو `video-engine/ep-trig-ferris.html`، التدوينة `episodes/ep-trig-ferris/blogger-post.html`.
 
 خريطة المنهج الكاملة والموسم الأول: مستند «عُمق: خريطة منهج تفاعلي» على claude.ai.

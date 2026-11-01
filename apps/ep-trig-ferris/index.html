@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>العجلة الدوّارة ودالة الجيب — عُمق</title>
+<meta name="description" content="محاكاة ثلاثية الأبعاد لعجلة دوّارة: ارتفاع الراكب يرسم منحنى دالة الجيب لحظة بلحظة. من سلسلة «عُمق» — رياضيات تُفهَم… لا تُحفَظ.">
+<style>
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-arabic-400-normal.woff2);font-weight:400;unicode-range:U+0600-06FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-arabic-700-normal.woff2);font-weight:700;unicode-range:U+0600-06FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-arabic-800-normal.woff2);font-weight:800;unicode-range:U+0600-06FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-latin-400-normal.woff2);font-weight:400;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-latin-700-normal.woff2);font-weight:700;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-latin-800-normal.woff2);font-weight:800;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:"STIX Two Text";src:url(../../brand/fonts/stix-two-text-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:"STIX Two Text";src:url(../../brand/fonts/stix-two-text-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:"STIX Two Text";src:url(../../brand/fonts/stix-two-text-latin-400-italic.woff2);font-weight:400;font-style:italic}
+@font-face{font-family:"STIX Two Text";src:url(../../brand/fonts/stix-two-text-latin-600-italic.woff2);font-weight:600;font-style:italic}
+:root{--ink:#1D2A3A;--green:#14905A;--mint:#3FD08C;--blue:#1F6FD1;--red:#D6453D;--gold:#E0A526;--paper:#FBF6EA;--card:#fffdf7;--muted:#6f675a;--line:rgba(29,42,58,.14)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Cairo,Tahoma,sans-serif;color:var(--ink);background:var(--paper);-webkit-tap-highlight-color:transparent;overflow:hidden}
+#app{display:flex;flex-direction:row;height:100%;width:100%}
+#panel{width:470px;flex:none;height:100%;overflow-y:auto;padding:12px 14px 16px;display:flex;flex-direction:column;gap:9px;background:linear-gradient(180deg,#fffaf0,#f7efdd);border-inline-end:1px solid var(--line);scrollbar-width:thin}
+#stage{flex:1;position:relative;min-width:0;overflow:hidden;background:var(--paper)}
+#gl,#ov{position:absolute;inset:0;width:100%;height:100%;display:block}
+#gl{touch-action:none;cursor:grab}
+#gl:active{cursor:grabbing}
+#ov{pointer-events:none}
+.math{font-family:"STIX Two Text",serif;direction:ltr;unicode-bidi:isolate}
+i.v,.math i{font-style:italic}
+.hd{display:flex;align-items:center;gap:10px}
+.mk{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#22344a,#16222f);position:relative;flex:none;box-shadow:0 4px 10px -4px rgba(10,20,30,.5)}
+.mk:after{content:"";position:absolute;left:8px;right:8px;top:18px;height:3.5px;border-radius:3px;background:var(--mint);transform:rotate(-40deg);box-shadow:0 0 6px var(--mint)}
+.hd h1{font-size:19px;margin:0;line-height:1.3;font-weight:800}
+.tag{display:inline-block;font-size:11.5px;background:var(--ink);color:#fff;border-radius:20px;padding:1px 9px;font-weight:700}
+.card{background:var(--card);border-radius:16px;padding:9px 12px;box-shadow:0 8px 22px -14px rgba(60,40,10,.45);border:1px solid rgba(29,42,58,.06)}
+.ttl{font-weight:800;font-size:14.5px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.hero .lbl{font-size:13.5px;font-weight:700;color:var(--muted)}
+.hero .big{display:flex;align-items:baseline;gap:6px;direction:ltr;justify-content:flex-end}
+.hero .big .math{font-size:58px;font-weight:600;line-height:1.05;color:var(--green);font-variant-numeric:tabular-nums}
+.hero .u{font-family:"STIX Two Text",serif;font-size:24px;color:var(--green)}
+.hero .sub{font-size:16px;color:var(--ink);text-align:left}
+#circle svg{width:100%;height:104px;display:block}
+.vals{font-size:14.5px;line-height:1.5;text-align:left}
+.btn{min-height:38px;padding:4px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.btn:hover{border-color:var(--green)}
+.btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.pri{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.pri.on{background:#0d6b42;border-color:#0d6b42}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.sm{min-height:34px;font-size:13px;padding:3px 6px;flex:1;white-space:nowrap}
+.btn.xs{min-height:28px;font-size:12px;padding:1px 9px}
+.btn.ok{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.no{background:var(--red);color:#fff;border-color:var(--red)}
+.sl{display:block;font-size:13.5px;font-weight:700;margin-top:3px}
+.sl span{display:flex;gap:5px;align-items:baseline;flex-wrap:wrap}
+.sl em{font-style:normal;color:var(--muted);font-weight:400;font-size:12.5px}
+input[type=range]{width:100%;height:26px;margin:0;accent-color:var(--green);cursor:pointer}
+#eq .ln{font-size:16.5px;line-height:1.55;text-align:left;white-space:nowrap}
+#eq .ln.s{font-size:14px;color:var(--muted)}
+.bl{color:var(--blue)} .rd{color:var(--red)} .gr{color:var(--green);font-weight:600} .gd{color:#b07f10}
+.q{margin:0 0 6px;font-size:14px;line-height:1.6}
+.rev{font-size:13.5px;line-height:1.65;margin-top:6px}
+.rev:empty{display:none}
+.lim{font-size:12.5px;color:var(--red);font-weight:700;min-height:18px}
+.foot{font-size:11.5px;color:var(--muted);margin:2px 0 0;line-height:1.6}
+.chip{position:absolute;top:12px;padding:3px 11px;border-radius:20px;font-size:12.5px;font-weight:700;pointer-events:none;transition:opacity .4s}
+#note{right:14px;background:rgba(255,253,247,.9);color:var(--muted);border:1px solid var(--line)}
+#tourChip{left:14px;background:var(--ink);color:#fff}
+#cap{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);max-width:min(860px,86%);background:rgba(29,42,58,.92);color:#fff;border-radius:16px;padding:9px 18px;font-size:17px;font-weight:700;line-height:1.6;text-align:center;pointer-events:none;transition:opacity .35s;box-shadow:0 10px 30px -12px rgba(0,0,0,.5)}
+#cap:empty{opacity:0}
+#frame{position:absolute;inset:5% 6%;border-radius:38px;box-shadow:0 0 0 200vmax rgba(29,42,58,.78),inset 0 0 0 7px var(--gold);pointer-events:none;opacity:0}
+#cursor{position:fixed;left:0;top:0;width:30px;height:36px;pointer-events:none;z-index:60;opacity:0;transition:opacity .3s;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
+#ripple{position:fixed;left:0;top:0;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:3px solid var(--gold);pointer-events:none;z-index:59;opacity:0}
+#err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;font-weight:700}
+/* phones & portrait tablets */
+@media (max-width:860px),(orientation:portrait) and (max-width:1100px){
+ body{overflow:auto}
+ #app{flex-direction:column;height:auto}
+ #stage{order:-1;flex:none;height:min(60vh,calc(70vw + 100px));min-height:300px;position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}
+ #panel{width:100%;height:auto;overflow:visible}
+ #cap{font-size:14px;bottom:10px;padding:6px 12px}
+ .hero .big .math{font-size:46px}
+}
+/* video layout: fixed 1920×1080, bottom strip reserved for brand chrome */
+body.video #app{width:1920px;height:1012px}
+body.video #panel{width:540px;padding:16px 22px;gap:11px;overflow:hidden}
+body.video .hd h1{font-size:22px}
+body.video #cap{font-size:25px;bottom:26px;padding:12px 26px;border-radius:20px}
+body.video #tourChip{display:none}
+body.video #note{right:auto;left:300px;top:22px;font-size:15px}
+body.video .foot{display:none}
+body.video *{transition:none!important}
+body.video #circle svg{height:96px}
+body.video .hero .big .math{font-size:56px}
+</style>
+</head>
+<body>
+<div id="app">
+ <aside id="panel">
+  <div class="hd"><span class="mk" aria-hidden="true"></span><div><h1>العجلة الدوّارة ودالة الجيب</h1><span class="tag">الثانوي · الدوال المثلثية</span></div></div>
+  <div class="duo">
+   <section class="card hero" id="hero">
+    <div class="lbl">ارتفاع الراكب <span class="math"><i>h</i></span></div>
+    <div class="big"><span id="hNum" class="math">2.0</span><span class="u">m</span></div>
+    <div class="sub math" id="tNum">t = 0.00 min</div>
+   </section>
+   <section class="card" id="circle">
+    <svg viewBox="-62 -56 124 112" aria-label="دائرة الزاوية">
+     <circle r="46" fill="none" stroke="#c9c0ae" stroke-width="2"/>
+     <line x1="-56" x2="56" y1="0" y2="0" stroke="#e3dccd" stroke-width="1.5"/><line y1="-52" y2="52" x1="0" x2="0" stroke="#e3dccd" stroke-width="1.5"/>
+     <path id="cArc" fill="none" stroke="#E0A526" stroke-width="3"/>
+     <line id="cV" stroke="#1F6FD1" stroke-width="4" stroke-linecap="round"/>
+     <line id="cH" stroke="#D6453D" stroke-width="4" stroke-linecap="round"/>
+     <line id="cR" stroke="#1D2A3A" stroke-width="3" stroke-linecap="round"/>
+     <circle r="3.5" fill="#1D2A3A"/><circle id="cP" r="6" fill="#14905A" stroke="#fff" stroke-width="2"/>
+    </svg>
+    <div class="vals math" id="cVals"></div>
+   </section>
+  </div>
+  <section class="card">
+   <div class="row"><button id="b-play" class="btn pri" style="flex:1.2">▶ تشغيل</button><button id="b-tri" class="btn" style="flex:2">إظهار نصف القطر والمثلث</button></div>
+   <label class="sl"><span>الزمن <span class="math"><i>t</i></span> <em>(المُدخل الوحيد: كل شيء يُحسب منه)</em></span><input id="s-t" type="range" dir="ltr" min="0" max="120" step="0.01" value="0"></label>
+   <div class="row" style="margin-top:4px"><button id="cam-front" class="btn sm on">أمامية</button><button id="cam-side" class="btn sm">جانبية</button><button id="cam-cabin" class="btn sm">داخل العربة</button><button id="cam-top" class="btn sm">علوية</button></div>
+  </section>
+  <section class="card" id="eq">
+   <div class="ttl">المعادلة الآن</div>
+   <div class="ln math"><i>h</i>(<i>t</i>) = <i>c</i> − <i>r</i>·cos(2π<i>t</i>/<i>T</i>)</div>
+   <div class="ln math" id="eq2"></div>
+   <div class="ln math" id="eq3"></div>
+   <div class="ln s math" id="eq4"></div>
+  </section>
+  <section class="card" id="pred">
+   <div class="ttl">توقّع ثم اكشف</div>
+   <p class="q">متى يرتفع الراكب أسرع: قرب القمة أم عند مستوى المركز؟</p>
+   <div class="row"><button id="p-top" class="btn" style="flex:1">قرب القمة</button><button id="p-mid" class="btn" style="flex:1.3">عند مستوى المركز</button><button id="b-rev" class="btn pri" disabled>اكشف</button></div>
+   <div id="revTxt" class="rev"></div>
+  </section>
+  <section class="card" id="brk">
+   <div class="ttl">اكسرها <button id="b-reset" class="btn xs">الأرقام الأصلية</button></div>
+   <label class="sl"><span>نصف القطر <span class="math"><i>r</i> = <b id="v-r">20</b> m</span> <em>← السعة</em></span><input id="s-r" type="range" dir="ltr" min="8" max="30" step="0.5" value="20"></label>
+   <label class="sl"><span>ارتفاع المركز <span class="math"><i>c</i> = <b id="v-c">22</b> m</span> <em>← خط الوسط (الإزاحة)</em></span><input id="s-c" type="range" dir="ltr" min="10" max="45" step="0.5" value="22"></label>
+   <label class="sl"><span>زمن الدورة <span class="math"><i>T</i> = <b id="v-T">8</b> min</span> <em>← الدورة</em></span><input id="s-T" type="range" dir="ltr" min="2" max="16" step="0.5" value="8"></label>
+   <div class="lim" id="lim"></div>
+  </section>
+  <p class="foot">الأرقام مستديرة وتوضيحية، وليست لعجلة حقيقية. كل رسم ورقم هنا يُحسب من دالة واحدة للزمن. اسحب المشهد للتدوير، وعجلة الفأرة أو القرص بإصبعين للتكبير.</p>
+ </aside>
+ <section id="stage">
+  <canvas id="gl"></canvas><canvas id="ov"></canvas>
+  <div id="frame"></div>
+  <div class="chip" id="note">أرقام توضيحية</div>
+  <div class="chip" id="tourChip">جولة تلقائية · المس للتحكم</div>
+  <div id="cap"></div>
+  <div id="err">تعذّر تشغيل الرسم ثلاثي الأبعاد على هذا الجهاز.</div>
+ </section>
+</div>
+<svg id="cursor" viewBox="0 0 30 36"><path d="M2 2 L2 28 L9 22 L14 33 L19 31 L14 20 L24 20 Z" fill="#fff" stroke="#1D2A3A" stroke-width="2.4" stroke-linejoin="round"/></svg>
+<div id="ripple"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+/* ================================================================
+   1) المعاملات — كل الأبعاد والحدود هنا. أي تداخل يُصلح برقم في هذه الكتلة.
+   ================================================================ */
+const PRM={
+ DEF:{r:20,c:22,T:8},        // أرقام توضيحية مستديرة: نصف القطر m، ارتفاع المركز m، الدورة min
+ N:12,                        // عدد العربات
+ R_MIN:8, R_MAX:30,           // R_MIN: أصغر r لا تتلامس عنده عربتان متجاورتان (يتطلب 2r·sin15° ≥ قطر العربة 3.3 m ⇒ r ≥ 6.4)
+ C_MIN:10, C_MAX:45,
+ T_MIN:2, T_MAX:16,
+ CLEAR:2,                     // c − r ≥ 2 ⇒ أسفل العربة (نصف ارتفاعها 1.15) يبقى 0.85 m فوق الأرض و0.55 فوق المنصة
+ CAB:{w:2.2,d:2.6,bot:1.15,top:1.2,roofW:2.4,roofD:2.74}, // العربة: z ∈ ±1.37
+ RIMZ:1.9,                    // مستوى الإطارين الأمامي والخلفي (بعيد عن العربة: 1.9−0.3 = 1.6 > 1.37)
+ RIM_IN:1.7,                  // الإطار أصغر من r بـ 1.7 حتى لا تمر الأذرع داخل العربة
+ RIM_TUBE:0.3, HUB:1.6,
+ LEGZ:2.9,                    // الأرجل خلف العجلة فقط (2.9−0.45 = 2.45 > 1.9+0.3)
+ PZ:2.8,                      // مستوى الرسوم (المنحنى، المثلث، الخط الأفقي) أمام كل الأجسام؛ ظهر اللوحة 2.8−0.3−0.12 = 2.38 > أقصى z للإطار 2.2
+ CAP_BAND:0.13,               // شريط أسفل الإطار محجوز للتعليق حتى لا يغطي محور t
+ MARGIN_R:7.5,                // هامش يمين المنحنى لتسميات t (min) وc وقيمة h
+ GAP:5.5,                     // المسافة بين مركز العربة الطرفية وبداية محور المنحنى (> 1.2 نصف العربة + 3.2 حافة اللوحة)
+ GW:34, GW_N:26,              // عرض المنحنى بالمتر (شاشة عريضة / ضيقة)؛ 34 تجعل العجلة ≈ 63٪ من ارتفاع المشهد
+ WIN:16, PEN:0.85, PEN_N:0.62, // نافذة الزمن 16 min، والقلم عند 85٪ منها (62٪ على الشاشة الضيقة ليتسع مكان تسمية h)
+ TMAX:120,                    // أقصى زمن على المنزلق
+ SPEED:0.8,                   // دقيقة محاكاة لكل ثانية حقيقية
+ PLAT:0.3,                    // ارتفاع منصة الركوب
+ EYEZ:1.45,                   // عين الراكب عند نافذة العربة الأمامية (أمام العربات 1.37 وخلف الإطار 1.6)، فلا تحجبها العربة المقابلة
+ IDLE:25                      // ثوانٍ من الهدوء تعيد الجولة
+};
+const DEF=PRM.DEF;
+
+/* ================================================================
+   2) النموذج — دوال نقية لمدخل واحد هو الزمن t (والمعاملات p)
+   h(t) = c − r·cos(2πt/T)
+   ================================================================ */
+const theta=(t,p)=>2*Math.PI*t/p.T;                 // زاوية الدوران من أسفل العجلة، عكس عقارب الساعة
+const H=(t,p)=>p.c-p.r*Math.cos(theta(t,p));        // ارتفاع الراكب
+const X=(t,p)=>p.r*Math.sin(theta(t,p));            // البعد الأفقي عن المركز
+const RATE=(t,p)=>p.r*2*Math.PI/p.T*Math.sin(theta(t,p)); // ميل المنحنى dh/dt بالمتر/دقيقة
+const cabinXY=(k,t,p)=>{const a=theta(t,p)+2*Math.PI*k/PRM.N; return [p.r*Math.sin(a),p.c-p.r*Math.cos(a)];};
+function legal(s){ // يطبّق الحدود؛ يعيد المعاملات الفعلية
+ const r=cl(s.r,PRM.R_MIN,PRM.R_MAX), T=cl(s.T,PRM.T_MIN,PRM.T_MAX);
+ const cmin=Math.max(PRM.C_MIN,r+PRM.CLEAR); const c=cl(s.c,cmin,PRM.C_MAX);
+ return {r,c,T,atMin:c<=cmin+1e-9};
+}
+// التحقق: t = 0,2,4,6,8 ⇒ h = 2,22,42,22,2
+const VERIFY=[0,2,4,6,8].map(t=>[t,+H(t,DEF).toFixed(6)]);
+console.assert(JSON.stringify(VERIFY.map(v=>v[1]))==='[2,22,42,22,2]','model check failed',VERIFY);
+
+/* ---------- helpers ---------- */
+function cl(x,a=0,b=1){return Math.max(a,Math.min(b,x));}
+const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const PE=(t,a,b)=>ease(cl((t-a)/(b-a)));
+const lerp=(a,b,k)=>a+(b-a)*k;
+const MI='−';
+const f=(n,d=1)=>{let s=n.toFixed(d); if(/^-0(\.0+)?$/.test(s)) s=s.slice(1); return s.replace('-',MI);};
+const g=n=>{const r=Math.round(n*10)/10; return (Object.is(r,-0)?0:r).toString().replace('-',MI);};
+const $=id=>document.getElementById(id);
+const Q=new URLSearchParams(location.search); const VIDEO=Q.has('video');
+if(VIDEO) document.body.classList.add('video');
+const defaults=()=>({t:0,r:DEF.r,c:DEF.c,T:DEF.T,playing:false,tri:false,pred:null,rev:false,ann:false,raised:false,cam:'front'});
+const differs=p=>Math.abs(p.r-DEF.r)>1e-6||Math.abs(p.c-DEF.c)>1e-6||Math.abs(p.T-DEF.T)>1e-6;
+function layout(p,aspect){ const narrow=aspect<1.15; const GW=narrow?PRM.GW_N:PRM.GW;
+ const X0=Math.max(p.r,DEF.r)+PRM.GAP; const top=Math.max(p.c+p.r,DEF.c+DEF.r)+PRM.CAB.top+2;
+ return {GW,X0,HA:10*Math.ceil(top/10),narrow}; }
+function windowOf(t){ const t0=Math.max(0,t-PRM.WIN*(ASPECT<1.15?PRM.PEN_N:PRM.PEN)); return [t0,t0+PRM.WIN]; }
+
+/* ================================================================
+   3) المشهد ثلاثي الأبعاد
+   ================================================================ */
+const stage=$('stage'), gl=$('gl'), ov=$('ov'), ox=ov.getContext('2d');
+if(!window.THREE){ $('err').style.display='flex'; throw new Error('three.js not loaded'); }
+const LOWDEV=!VIDEO&&(matchMedia('(pointer:coarse)').matches||(navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=4);
+let quality=LOWDEV?'low':'high';
+const renderer=new THREE.WebGLRenderer({canvas:gl,antialias:!LOWDEV,preserveDrawingBuffer:VIDEO,powerPreference:'high-performance'});
+renderer.outputEncoding=THREE.sRGBEncoding; renderer.shadowMap.enabled=true;
+const scene=new THREE.Scene(); scene.background=new THREE.Color('#FBF6EA'); scene.fog=new THREE.Fog('#FBF6EA',150,340);
+const camera=new THREE.PerspectiveCamera(30,1,0.3,1200);
+scene.add(new THREE.HemisphereLight('#ffffff','#e6d6b4',0.72));
+const sun=new THREE.DirectionalLight('#fff3df',0.82); sun.position.set(-45,95,70); sun.castShadow=true;
+sun.target.position.set(12,14,0); scene.add(sun,sun.target);
+Object.assign(sun.shadow.camera,{left:-75,right:75,top:75,bottom:-60,near:10,far:260}); sun.shadow.bias=-0.0006; sun.shadow.normalBias=0.04;
+function applyQuality(){
+ renderer.setPixelRatio(VIDEO?1:quality==='low'?Math.min(devicePixelRatio,1.25):Math.min(devicePixelRatio,2));
+ renderer.shadowMap.type=quality==='low'?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;
+ const m=quality==='low'?1024:2048; sun.shadow.mapSize.set(m,m);
+ if(sun.shadow.map){sun.shadow.map.dispose(); sun.shadow.map=null;}
+ resize();
+}
+const std=(color,o={})=>new THREE.MeshStandardMaterial(Object.assign({color,roughness:.6,metalness:.1},o));
+const MAT={rim:std('#2c3e55',{roughness:.42,metalness:.35}),spoke:std('#71808f',{metalness:.3}),leg:std('#3b4d63',{metalness:.25}),
+ hub:std('#1D2A3A',{metalness:.4}),body:std('#f5f1e8'),bodyT:std('#E0A526',{roughness:.45}),roof:std('#1D2A3A'),glass:std('#bcd5e9',{roughness:.25,metalness:.2}),
+ plat:std('#d8cbb0'),board:std('#fffdf7',{roughness:.95}),post:std('#c9bc9f'),bld:std('#eadfc7',{roughness:1}),bld2:std('#e2d3b5',{roughness:1}),
+ palm:std('#7a6a4f'),frond:std('#5f8f5a'),rider:std('#14905A',{emissive:'#0c5a37',emissiveIntensity:.35}),stub:std('#14905A')};
+// الأرض والخلفية
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(1200,1200),std('#efe4cc',{roughness:1})); ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+const plaza=new THREE.Mesh(new THREE.CircleGeometry(38,64),std('#e5d8bb',{roughness:1})); plaza.rotation.x=-Math.PI/2; plaza.position.y=0.02; plaza.receiveShadow=true; scene.add(plaza);
+{ // أفق مدينة بسيط ونخيل
+ const rnd=(s=>()=>(s=(s*16807)%2147483647)/2147483647)(7);
+ for(let i=0;i<34;i++){ const w=6+rnd()*12, h=5+rnd()*22, d=6+rnd()*10; const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),i%3?MAT.bld:MAT.bld2);
+  m.position.set(-140+i*9.5+rnd()*5,h/2,-95-rnd()*70); m.receiveShadow=true; scene.add(m); }
+ const tw=new THREE.Group(); const a=new THREE.Mesh(new THREE.BoxGeometry(9,58,9),MAT.bld2); a.position.y=29; tw.add(a);
+ const b=new THREE.Mesh(new THREE.BoxGeometry(14,14,9),MAT.bld2); b.position.y=65; tw.add(b);
+ const hole=new THREE.Mesh(new THREE.BoxGeometry(7,8,9.4),MAT.bld); hole.position.y=67; tw.add(hole); tw.position.set(115,0,-150); scene.add(tw);
+ const palm=(x,z,s)=>{ const p=new THREE.Group(); const tr=new THREE.Mesh(new THREE.CylinderGeometry(.35*s,.5*s,9*s,6),MAT.palm); tr.position.y=4.5*s; p.add(tr);
+  for(let k=0;k<7;k++){ const fr=new THREE.Mesh(new THREE.ConeGeometry(.5*s,5*s,4),MAT.frond); fr.position.y=9*s; fr.rotation.z=1.9; fr.rotation.y=k*0.9; fr.translateY(2.2*s); p.add(fr); }
+  p.traverse(o=>{o.castShadow=true;}); p.position.set(x,0,z); scene.add(p); };
+ [[-48,-22,1.1],[-62,-8,.9],[-40,-40,1],[96,-24,1.05],[110,-10,.9],[84,-44,1]].forEach(a=>palm(...a));
+}
+function cyl(a,b,rad,mat,seg=8){ const v=new THREE.Vector3().subVectors(b,a); const L=v.length();
+ const m=new THREE.Mesh(new THREE.CylinderGeometry(rad,rad,L,seg),mat); m.position.copy(a).addScaledVector(v,.5);
+ m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize()); m.castShadow=true; m.receiveShadow=true; return m; }
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+let wheelRot=null, wheelStatic=null, built={r:-1,c:-1};
+function disposeGroup(gp){ if(!gp) return; scene.remove(gp); gp.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
+function buildWheel(p){
+ disposeGroup(wheelRot); disposeGroup(wheelStatic);
+ const {r,c}=p, rr=r-PRM.RIM_IN, Z=PRM.RIMZ, lowQ=quality==='low';
+ wheelRot=new THREE.Group(); wheelRot.position.set(0,c,0);
+ for(const z of [Z,-Z]){
+  const t1=new THREE.Mesh(new THREE.TorusGeometry(rr,PRM.RIM_TUBE,8,lowQ?72:128),MAT.rim); t1.position.z=z; t1.castShadow=true; wheelRot.add(t1);
+  const t2=new THREE.Mesh(new THREE.TorusGeometry(rr*0.56,0.2,6,lowQ?48:96),MAT.rim); t2.position.z=z; t2.castShadow=true; wheelRot.add(t2);
+  const hd=new THREE.Mesh(new THREE.CylinderGeometry(PRM.HUB,PRM.HUB,0.5,24),MAT.hub); hd.rotation.x=Math.PI/2; hd.position.z=z; hd.castShadow=true; wheelRot.add(hd);
+  for(let k=0;k<PRM.N;k++){ const a=2*Math.PI*k/PRM.N, s=Math.sin(a), co=-Math.cos(a);
+   wheelRot.add(cyl(V(s*PRM.HUB,co*PRM.HUB,z),V(s*rr,co*rr,z),0.12,MAT.spoke,6));            // ضلع
+   const a2=a+Math.PI/PRM.N; wheelRot.add(cyl(V(Math.sin(a2)*rr*0.56,-Math.cos(a2)*rr*0.56,z),V(s*rr,co*rr,z),0.09,MAT.spoke,5)); // تقوية
+   wheelRot.add(cyl(V(s*(rr-PRM.RIM_TUBE*0.5),co*(rr-PRM.RIM_TUBE*0.5),z),V(s*r,co*r,z),0.14,MAT.rim,6));  // ذراع حتى مركز العربة
+   wheelRot.add(cyl(V(s*r,co*r,Math.sign(z)*(PRM.CAB.d/2)),V(s*r,co*r,z),0.11,MAT.hub,6));   // محور العربة القصير
+  }
+ }
+ scene.add(wheelRot);
+ wheelStatic=new THREE.Group(); const LZ=-PRM.LEGZ;
+ wheelStatic.add(cyl(V(0,c,LZ-0.5),V(0,c,Z+0.35),0.55,MAT.hub,16));                     // المحور
+ wheelStatic.add(cyl(V(0,c,LZ),V(-0.5*c,0,LZ),0.45,MAT.leg,10), cyl(V(0,c,LZ),V(0.5*c,0,LZ),0.45,MAT.leg,10), cyl(V(0,c,LZ),V(0,0,LZ-0.55*c),0.45,MAT.leg,10));
+ wheelStatic.add(cyl(V(-0.32*c,0.36*c,LZ),V(0.32*c,0.36*c,LZ),0.25,MAT.leg,8));
+ for(const [x,z] of [[-0.5*c,LZ],[0.5*c,LZ],[0,LZ-0.55*c]]){ const ft=new THREE.Mesh(new THREE.BoxGeometry(2.2,0.4,2.2),MAT.plat); ft.position.set(x,0.2,z); ft.receiveShadow=true; wheelStatic.add(ft); }
+ const pl=new THREE.Mesh(new THREE.BoxGeometry(7,PRM.PLAT,3.2),MAT.plat); pl.position.set(0,PRM.PLAT/2,0); pl.receiveShadow=true; pl.castShadow=true; wheelStatic.add(pl);
+ scene.add(wheelStatic); built={r,c};
+}
+// العربات: تبقى رأسية دائماً (لا تدور مع العجلة)
+const cabins=[];
+for(let k=0;k<PRM.N;k++){ const gp=new THREE.Group(), C=PRM.CAB;
+ const body=new THREE.Mesh(new THREE.BoxGeometry(C.w,1.4,C.d),k===0?MAT.bodyT:MAT.body); body.position.y=-C.bot+0.7;
+ const glass=new THREE.Mesh(new THREE.BoxGeometry(C.w*0.96,0.75,C.d*0.96),MAT.glass); glass.position.y=0.625;
+ const roof=new THREE.Mesh(new THREE.BoxGeometry(C.roofW,0.2,C.roofD),k===0?MAT.roof:MAT.roof); roof.position.y=C.top-0.1;
+ for(const m of [body,glass,roof]){ m.castShadow=true; m.receiveShadow=true; gp.add(m); }
+ gp.userData.parts=[body,glass,roof]; scene.add(gp); cabins.push(gp); }
+// الراكب: علامة خضراء في مستوى الرسوم موصولة بالعربة المتابَعة
+const rider=new THREE.Mesh(new THREE.SphereGeometry(0.6,20,14),MAT.rider); rider.castShadow=true; scene.add(rider);
+const stub=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,1,6),MAT.stub); stub.rotation.x=Math.PI/2; scene.add(stub);
+const pen=new THREE.Mesh(new THREE.SphereGeometry(0.55,20,14),MAT.rider); scene.add(pen);
+// لوحة المنحنى
+let board=null, boardKey='';
+function buildBoard(L){ const key=[L.X0,L.GW,L.HA].join(); if(key===boardKey) return; boardKey=key; disposeGroup(board);
+ board=new THREE.Group(); const x1=L.X0-3.2, x2=L.X0+L.GW+3.5, h=L.HA+4.2, z=PRM.PZ-0.3;
+ const b=new THREE.Mesh(new THREE.BoxGeometry(x2-x1,h,0.12),MAT.board); b.position.set((x1+x2)/2,h/2,z-0.06); b.castShadow=true; b.receiveShadow=true; board.add(b);
+ for(const x of [x1+1.2,x2-1.2]){ const p=new THREE.Mesh(new THREE.BoxGeometry(0.5,h,0.5),MAT.post); p.position.set(x,h/2,z-0.4); p.castShadow=true; board.add(p); }
+ scene.add(board); }
+
+/* رسوم مسطحة في مستوى PZ: أشرطة رفيعة تُعاد كل إطار */
+class Batch{
+ constructor(color,max,dz,opacity=1){ this.max=max; this.pos=new Float32Array(max*12); const idx=new Uint16Array(max*6);
+  for(let i=0;i<max;i++){ const o=i*6,v=i*4; idx[o]=v;idx[o+1]=v+1;idx[o+2]=v+2;idx[o+3]=v;idx[o+4]=v+2;idx[o+5]=v+3; }
+  this.geo=new THREE.BufferGeometry(); this.attr=new THREE.BufferAttribute(this.pos,3); this.attr.setUsage(THREE.DynamicDrawUsage);
+  this.geo.setAttribute('position',this.attr); this.geo.setIndex(new THREE.BufferAttribute(idx,1));
+  this.mesh=new THREE.Mesh(this.geo,new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide,transparent:opacity<1,opacity,fog:false}));
+  this.mesh.frustumCulled=false; this.dz=dz; this.n=0; scene.add(this.mesh); }
+ begin(){ this.n=0; this.z=PRM.PZ+this.dz; }
+ quad(ax,ay,bx,by,cx,cy,dx,dy){ if(this.n>=this.max) return; const p=this.pos,o=this.n*12,z=this.z;
+  p[o]=ax;p[o+1]=ay;p[o+2]=z;p[o+3]=bx;p[o+4]=by;p[o+5]=z;p[o+6]=cx;p[o+7]=cy;p[o+8]=z;p[o+9]=dx;p[o+10]=dy;p[o+11]=z; this.n++; }
+ seg(x1,y1,x2,y2,w,ext=0){ const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy); if(L<1e-6) return; const ux=dx/L,uy=dy/L,nx=-uy*w/2,ny=ux*w/2;
+  x1-=ux*ext;y1-=uy*ext;x2+=ux*ext;y2+=uy*ext; this.quad(x1+nx,y1+ny,x2+nx,y2+ny,x2-nx,y2-ny,x1-nx,y1-ny); }
+ tri(ax,ay,bx,by,cx,cy){ this.quad(ax,ay,bx,by,cx,cy,cx,cy); }
+ poly(pts,w){ for(let i=1;i<pts.length;i++) this.seg(pts[i-1][0],pts[i-1][1],pts[i][0],pts[i][1],w,w*0.45); }
+ dash(x1,y1,x2,y2,w,on,off){ const L=Math.hypot(x2-x1,y2-y1); if(L<1e-6) return; const ux=(x2-x1)/L,uy=(y2-y1)/L; for(let s=0;s<L;s+=on+off){ const e=Math.min(L,s+on); this.seg(x1+ux*s,y1+uy*s,x1+ux*e,y1+uy*e,w); } }
+ arrow(x1,y1,x2,y2,w,hd){ const L=Math.hypot(x2-x1,y2-y1),ux=(x2-x1)/L,uy=(y2-y1)/L; this.seg(x1,y1,x2-ux*hd*.8,y2-uy*hd*.8,w); this.tri(x2,y2,x2-ux*hd-uy*hd*.45,y2-uy*hd+ux*hd*.45,x2-ux*hd+uy*hd*.45,y2-uy*hd-ux*hd*.45); }
+ end(){ this.geo.setDrawRange(0,this.n*6); this.attr.needsUpdate=true; }
+}
+const B={grid:new Batch('#e2d9c6',400,0.00),gray:new Batch('#98a2ad',1400,0.02),gold:new Batch('#E0A526',600,0.04),ink:new Batch('#1D2A3A',300,0.06),
+ green:new Batch('#14905A',1400,0.08),blue:new Batch('#1F6FD1',60,0.10),red:new Batch('#D6453D',60,0.10),dk:new Batch('#0b5e39',60,0.12)};
+
+/* ================================================================
+   4) الكاميرات: كل وضع دالة لحالة النموذج
+   ================================================================ */
+let ASPECT=1.6;
+function frontFrame(p){ const L=layout(p,ASPECT); const xmin=-(Math.max(p.r,DEF.r)+1.8), xmax=L.X0+L.GW+PRM.MARGIN_R, ymin=-2.6, ymax=L.HA+4.6;
+ const band=L.narrow?0:PRM.CAP_BAND; const vh=Math.max((ymax-ymin)/(1-band),(xmax-xmin)/ASPECT)*1.02, fov=30;
+ const cx=(xmin+xmax)/2, cy=ymax+0.01*vh-vh/2; // المحتوى ملتصق بالأعلى، والفراغ الزائد أسفل للتعليق
+ return {cx,cy,d:vh/2/Math.tan(fov*Math.PI/360),fov,vh}; }
+function sph(tgt,az,el,R){ return V(tgt.x+R*Math.cos(el)*Math.sin(az),tgt.y+R*Math.sin(el),tgt.z+R*Math.cos(el)*Math.cos(az)); }
+function pose(mode,S,p){
+ const F=frontFrame(p), L=layout(p,ASPECT), t=S.t;
+ if(mode==='front'){ const tg=V(F.cx,F.cy,PRM.PZ); return {pos:V(F.cx,F.cy,PRM.PZ+F.d),tgt:tg,fov:F.fov}; }
+ if(mode==='side'){ const tg=V(4,p.c*0.62,0); return {pos:sph(tg,-1.02,0.1,F.d*0.88),tgt:tg,fov:30}; }
+ if(mode==='top'){ const tg=V(F.cx*0.45,0,0); return {pos:sph(tg,0.0,1.556,F.d*2.5),tgt:tg,fov:12}; } // بعيدة وضيقة: شبه إسقاط عمودي، فتظهر العجلة خطاً
+ // داخل العربة: العين فوق مركز العربة بقليل، تنظر إلى نقطة الراكب على المنحنى
+ const [t0]=windowOf(t), px=L.X0+(t-t0)*L.GW/PRM.WIN, x=X(t,p), h=H(t,p);
+ return {pos:V(x,h+0.3,PRM.EYEZ),tgt:V(px,h,PRM.PZ),fov:58};
+}
+const orbit={yaw:0,pitch:0,zoom:1};
+function applyCamera(S,p,cs){
+ const A=pose(cs.from,S,p), Bp=pose(cs.to,S,p), k=cs.k;
+ const pos=A.pos.clone().lerp(Bp.pos,k), tgt=A.tgt.clone().lerp(Bp.tgt,k); let fov=lerp(A.fov,Bp.fov,k);
+ const off=pos.clone().sub(tgt); let R=off.length(), el=Math.asin(cl(off.y/R,-1,1)), az=Math.atan2(off.x,off.z);
+ el=cl(el+orbit.pitch,-0.08,1.56); az+=orbit.yaw; R*=orbit.zoom;
+ camera.position.copy(sph(tgt,az,el,R)); camera.fov=fov; camera.updateProjectionMatrix(); camera.lookAt(tgt);
+ scene.fog.near=Math.max(R,40)*1.12; scene.fog.far=Math.max(R,40)*2.5; // الضباب يتبع بُعد الكاميرا فلا يبهت المشهد في اللقطة العلوية
+ return (cs.to==='cabin'?k:0)+(cs.from==='cabin'?1-k:0); // وزن «داخل العربة»
+}
+
+/* ================================================================
+   5) طبقة التسميات (2D) — مواضعها مسقطة من نقاط النموذج
+   ================================================================ */
+let DPR=1, SW=1, SH=1; const LBL=[]; window.__ov=[];
+function proj(x,y,z){ const v=V(x,y,z).project(camera); if(v.z>1||v.z<-1) return null; return [(v.x+1)/2*SW,(1-v.y)/2*SH]; }
+function lab(name,txt,x,y,z,o={}){ const q=proj(x,y,z); if(!q) return; const fs=o.fs||FS; const math=o.math!==false;
+ ox.font=math?`${o.it?'italic ':''}600 ${fs}px "STIX Two Text"`:`700 ${fs*0.92}px Cairo`; ox.direction=math?'ltr':'rtl';
+ const w=ox.measureText(txt).width, hh=fs*1.25; let X0=q[0]+(o.dx||0)*fs, Y0=q[1]+(o.dy||0)*fs;
+ const al=o.al||'c'; const left=al==='l'?X0:al==='r'?X0-w:X0-w/2; const rect=[left-5,Y0-hh/2,w+10,hh];
+ if(o.bg!==false){ ox.fillStyle='rgba(255,253,247,.88)'; ox.beginPath(); ox.roundRect(rect[0],rect[1],rect[2],rect[3],6); ox.fill(); }
+ ox.fillStyle=o.col||'#1D2A3A'; ox.textAlign='left'; ox.textBaseline='middle'; if(!math){ox.textAlign='right';} ox.fillText(txt,math?left:left+w,Y0+1);
+ LBL.push({name,rect,cover:o.cover}); }
+let FS=14;
+function checkLabels(points){ const out=[]; for(let i=0;i<LBL.length;i++){ const a=LBL[i].rect;
+  for(let j=i+1;j<LBL.length;j++){ const b=LBL[j].rect; if(a[0]<b[0]+b[2]&&b[0]<a[0]+a[2]&&a[1]<b[1]+b[3]&&b[1]<a[1]+a[3]) out.push(LBL[i].name+' × '+LBL[j].name); }
+  for(const [pn,pt] of points){ if(pt&&pt[0]>a[0]-4&&pt[0]<a[0]+a[2]+4&&pt[1]>a[1]-4&&pt[1]<a[1]+a[3]+4) out.push(LBL[i].name+' يغطي '+pn); } }
+ window.__ov=out; return out; }
+
+/* ================================================================
+   6) الرسم: كل شيء يُقرأ من الحالة S والنموذج
+   ================================================================ */
+const lastDiag={};
+function render(S,cs){
+ const p=legal(S), t=S.t, L=layout(p,ASPECT);
+ if(p.r!==built.r||p.c!==built.c) buildWheel(p);
+ buildBoard(L);
+ const th=theta(t,p), x=X(t,p), h=H(t,p), co=Math.cos(th), si=Math.sin(th), rate=RATE(t,p);
+ wheelRot.rotation.z=th;
+ for(let k=0;k<PRM.N;k++){ const [cx,cy]=cabinXY(k,t,p); cabins[k].position.set(cx,cy,0); }
+ const [t0]=windowOf(t), sx=L.GW/PRM.WIN, gx=tt=>L.X0+(tt-t0)*sx, penX=gx(t);
+ rider.position.set(x,h,PRM.PZ); stub.position.set(x,h,(PRM.RIMZ+0.12+PRM.PZ)/2); stub.scale.y=PRM.PZ-(PRM.RIMZ+0.12); pen.position.set(penX,h,PRM.PZ);
+ const cabW=applyCamera(S,p,cs);
+ const inCab=cabW>0.5; cabins[0].userData.parts.forEach(m=>m.visible=!inCab); rider.visible=stub.visible=!inCab;
+ $('frame').style.opacity=cl((cabW-0.55)/0.45);
+ // ---- رسوم المنحنى
+ for(const k in B) B[k].begin();
+ const HA=L.HA, X0=L.X0, X1=X0+L.GW, lw=0.2;
+ for(let y=10;y<=HA;y+=10) B.grid.seg(X0,y,X1,y,0.09);
+ const tick0=Math.ceil(t0/2-1e-9)*2; for(let tt=tick0;tt<=t0+PRM.WIN+1e-9;tt+=2){ B.grid.seg(gx(tt),0,gx(tt),HA,0.09); B.ink.seg(gx(tt),-0.55,gx(tt),0,0.14); }
+ for(let y=0;y<=HA;y+=10) B.ink.seg(X0-0.55,y,X0,y,0.14);
+ B.ink.arrow(X0,-0.6,X0,HA+2.4,lw,1.3); B.ink.arrow(X0-0.6,0,X1+2.4,0,lw,1.3);
+ const N=Math.max(2,Math.ceil((t-t0)/PRM.WIN*360)); const pts=[];
+ for(let i=0;i<=N;i++){ const tt=t0+(t-t0)*i/N; pts.push([gx(tt),H(tt,p)]); }
+ if(differs(p)){ const rp=[]; for(let i=0;i<=N;i++){ const tt=t0+(t-t0)*i/N; rp.push([gx(tt),H(tt,DEF)]); } for(let i=1;i<rp.length;i+=2) B.gray.seg(rp[i-1][0],rp[i-1][1],rp[i][0],rp[i][1],0.14,0.05); }
+ B.green.poly(pts,0.34);
+ B.green.dash(x+0.7,h,penX-0.6,h,0.2,1.1,0.7);                        // الخط الأفقي: الراكب ↔ نقطته
+ B.gray.dash(penX,h-0.7,penX,0,0.1,0.6,0.5);                           // إسقاط إلى محور t
+ const ann=S.ann||differs(p);
+ if(ann){ B.gold.dash(X0,p.c,X1,p.c,0.14,1.0,0.6);
+  const kc=Math.floor((t-p.T/2)/p.T); const tc=(kc+0.5)*p.T;            // آخر قمة مرسومة
+  if(tc>=t0&&tc<=t){ B.gold.arrow(gx(tc),p.c,gx(tc),p.c+p.r-0.25,0.16,1.0); }
+  const tb=(kc+0.5)*p.T-p.T; if(tb>=t0&&tc<=t){ const yb=p.c+p.r+2.2; B.gold.seg(gx(tb),yb,gx(tc),yb,0.14); B.gold.seg(gx(tb),yb-0.8,gx(tb),yb+0.8,0.14); B.gold.seg(gx(tc),yb-0.8,gx(tc),yb+0.8,0.14); } }
+ if(S.tri&&!inCab){ const z=0; // المثلث القائم ونصف القطر
+  B.blue.seg(0,p.c,0,h,0.32,0.16); B.red.seg(0,h,x,h,0.32,0.16); B.ink.seg(0,p.c,x,h,0.26,0.1);
+  const m=Math.min(1.4,Math.abs(x)*0.4,Math.abs(h-p.c)*0.4); if(m>0.3){ const sx2=Math.sign(x)||1, sy2=Math.sign(p.c-h)||1; B.ink.seg(sx2*m,h,sx2*m,h+sy2*m,0.1); B.ink.seg(0,h+sy2*m,sx2*m,h+sy2*m,0.1); }
+  const thm=((th%(2*Math.PI))+2*Math.PI)%(2*Math.PI), rad=Math.min(4,p.r*0.25);
+  if(thm>0.05){ const ar=[]; for(let i=0;i<=48;i++){ const a=thm*i/48; ar.push([rad*Math.sin(a),p.c-rad*Math.cos(a)]); } B.gold.poly(ar,0.16); } }
+ if(S.rev){ const sl=rate/sx; const dx=3.2/Math.sqrt(1+sl*sl); B.dk.seg(penX-dx,h-sl*dx,penX+dx,h+sl*dx,0.22); }
+ for(const k in B) B[k].end();
+ renderer.render(scene,camera);
+ // ---- التسميات
+ ox.setTransform(DPR,0,0,DPR,0,0); ox.clearRect(0,0,SW,SH); LBL.length=0; FS=cl(SH/50,11,VIDEO?23:18);
+ // واجهية مستوى الرسوم: إن رُئي المستوى من حافته تتكدس التسميات، فنخفيها
+ const fwd=new THREE.Vector3(); camera.getWorldDirection(fwd); const facing=Math.abs(fwd.z);
+ const pxLen=(x1,y1,x2,y2)=>{ const a=proj(x1,y1,PRM.PZ), b=proj(x2,y2,PRM.PZ); return a&&b?Math.hypot(a[0]-b[0],a[1]-b[1]):0; };
+ const ISO=s=>'⁦'+s+'⁩';
+ if(!inCab&&facing>0.6){
+  for(let y=0;y<=HA;y+=10) lab('h'+y,String(y),X0-0.9,y,PRM.PZ,{al:'r',bg:false,col:'#5b5446',fs:FS*0.92});
+  lab('hAxis','h (m)',X0,HA+3.4,PRM.PZ,{it:false,bg:false});
+  for(let tt=tick0;tt<=t0+PRM.WIN+1e-9;tt+=4) if(gx(tt)-X0>2.5) lab('t'+tt,String(Math.round(tt)),gx(tt),-1.9,PRM.PZ,{bg:false,col:'#5b5446',fs:FS*0.92});
+  lab('tAxis','t (min)',X1+2.4,-1.9,PRM.PZ,{al:'r',bg:false,dy:1.25});
+  if(ann){ lab('cLine','c = '+g(p.c),X1+0.6,p.c,PRM.PZ,{al:'l',col:'#a87808'});
+   const kc=Math.floor((t-p.T/2)/p.T), tc=(kc+0.5)*p.T, tb=tc-p.T;
+   if(tc>=t0&&tc<=t) lab('amp','r = '+g(p.r),gx(tc)+0.6,p.c+p.r*0.5,PRM.PZ,{al:'l',col:'#a87808'});
+   if(tb>=t0&&tc<=t) lab('per','T = '+g(p.T)+' min',(gx(tb)+gx(tc))/2,p.c+p.r+3.6,PRM.PZ,{col:'#a87808'}); }
+  if(S.tri&&facing>0.6){ const sx2=Math.sign(x)||1, up=h>p.c;
+   // r: عمودياً على الوتر، في الجهة البعيدة عن الزاوية القائمة
+   let nx=-(h-p.c)/p.r, ny=x/p.r; if(x*(h-p.c)>0){ nx=-nx; ny=-ny; }
+   lab('rLbl','r = '+g(p.r),x/2+nx*2.4,(p.c+h)/2+ny*2.4,PRM.PZ,{col:'#1D2A3A',al:nx>0.35?'l':nx<-0.35?'r':'c'});
+   if(pxLen(0,p.c,0,h)>FS*2.6) lab('cosLbl','r·cos θ = '+f(p.r*co,1),0,(p.c+h)/2,PRM.PZ,{col:'#1F6FD1',al:sx2>0?'r':'l',dx:-sx2*0.6});
+   ox.font=`600 ${FS}px "STIX Two Text"`; const sw=ox.measureText('r·sin θ = −00.0').width;
+   if(pxLen(0,h,x,h)>sw+30) lab('sinLbl','r·sin θ = '+f(p.r*si,1),x/2,h,PRM.PZ,{col:'#D6453D',dy:up?-1.25:1.25});
+   const thd=((th%(2*Math.PI))+2*Math.PI)%(2*Math.PI); const rad=Math.min(4,p.r*0.25)+2.0; const am=thd/2;
+   if(thd>0.35) lab('thLbl','θ',rad*Math.sin(am),p.c-rad*Math.cos(am),PRM.PZ,{col:'#a87808',it:true,bg:false}); }
+ }
+ if(facing>0.5||inCab){
+  lab('pen','h = '+f(h,1)+' m',penX+1.2,h,PRM.PZ,{al:'l',col:'#0d6b42',dy:-1.05});
+  if(S.rev) lab('tan','الميل '+ISO(f(rate,1)+' m/min'),penX+1.2,h,PRM.PZ,{math:false,al:'l',col:'#0b5e39',dy:1.15});
+ }
+ const pts2=[['الراكب',proj(x,h,PRM.PZ)],['نقطة المنحنى',proj(penX,h,PRM.PZ)]];
+ const overl=checkLabels(inCab?[]:pts2);
+ // ---- اللوحات
+ $('hNum').textContent=f(h,1); $('tNum').innerHTML='<i>t</i> = '+f(t,2)+' min';
+ $('eq2').innerHTML=`<i>h</i>(${f(t,2)}) = ${g(p.c)} − <span class="bl">${g(p.r)}·cos(2π·${f(t,2)}/${g(p.T)})</span>`;
+ $('eq3').innerHTML=`= ${g(p.c)} − ${g(p.r)}·(<span class="bl">${f(co,3)}</span>) = <span class="gr">${f(h,2)} m</span>`;
+ $('eq4').innerHTML=`= ${g(p.c)} + ${g(p.r)}·sin(2π<i>t</i>/${g(p.T)} − π/2) &nbsp;<span dir="rtl" style="font-family:Cairo">جيبٌ مُزاح ربع دورة</span>`;
+ const thd=((th%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+ $('cVals').innerHTML=`<i>θ</i> = ${f(thd,2)} rad = ${f(thd*180/Math.PI,1)}°<br><span class="bl">cos <i>θ</i> = ${f(co,3)}</span><br><span class="rd">sin <i>θ</i> = ${f(si,3)}</span>`;
+ const R0=46, qx=R0*si, qy=R0*co; // SVG: y للأسفل، والزاوية من الأسفل عكس عقارب الساعة كما في المشهد
+ const set=(id,a)=>{ const e=$(id); for(const k in a) e.setAttribute(k,a[k]); };
+ set('cR',{x1:0,y1:0,x2:qx,y2:qy}); set('cV',{x1:0,y1:0,x2:0,y2:qy}); set('cH',{x1:0,y1:qy,x2:qx,y2:qy}); set('cP',{cx:qx,cy:qy});
+ const ra=16; set('cArc',{d:thd<0.02?'':`M0 ${ra} A${ra} ${ra} 0 ${thd>Math.PI?1:0} 0 ${ra*si} ${ra*co}`});
+ $('v-r').textContent=g(p.r); $('v-c').textContent=g(p.c); $('v-T').textContent=g(p.T);
+ $('lim').innerHTML=(p.atMin&&S.ann)?`حدّ: <span class="math">${g(p.c)} − ${g(p.r)} = ${g(PRM.CLEAR)} m</span> أقل بُعد بين أسفل الدائرة والأرض${S.raised?'، فرُفع المركز تلقائياً':''}.`:'';
+ const vmax=2*Math.PI*p.r/p.T, vtop=RATE(p.T*7/16,p);
+ $('revTxt').innerHTML=S.rev?(S.pred==='mid'?'<b class="gr">صحيح ✓</b> ':S.pred==='top'?'<b style="color:var(--red)">ليس كذلك.</b> ':'')+
+  `أكبر ميل عند مستوى المركز: <span class="math gr">2π<i>r</i>/<i>T</i> = ${f(vmax,1)} m/min</span>، وقبيل القمة <span class="math">${f(vtop,1)}</span>، وعند القمة <span class="math">0</span>. الميل الآن: <span class="math gr">${f(rate,1)} m/min</span>`:'';
+ Object.assign(lastDiag,{t,h,x,cos:co,sin:si,rate,cabinY:cabins[0].position.y,riderY:rider.position.y,penY:pen.position.y,hShown:+$('hNum').textContent.replace(MI,'-'),overlaps:overl});
+ return lastDiag;
+}
+
+/* ================================================================
+   7) الحالة والأزرار
+   ================================================================ */
+let S=defaults(); const camLive={from:'front',to:'front',t0:-9,dur:1.4};
+function syncUI(S){
+ const pl=$('b-play'); pl.textContent=S.playing?'❚❚ إيقاف':'▶ تشغيل'; pl.classList.toggle('on',S.playing);
+ $('b-tri').classList.toggle('on',S.tri);
+ for(const m of ['front','side','cabin','top']) $('cam-'+m).classList.toggle('on',S.cam===m);
+ $('p-top').classList.toggle('on',S.pred==='top'&&!S.rev); $('p-mid').classList.toggle('on',S.pred==='mid'&&!S.rev);
+ $('p-top').classList.toggle('no',S.rev&&S.pred==='top'); $('p-mid').classList.toggle('ok',S.rev); $('b-rev').disabled=!S.pred||S.rev;
+ const p=legal(S); const sv=(id,v)=>{ const e=$(id); if(document.activeElement!==e||tour.on) e.value=v; };
+ sv('s-t',S.t); sv('s-r',p.r); sv('s-c',p.c); sv('s-T',p.T);
+}
+const ACT={
+ play:S=>{S.playing=!S.playing;}, tri:S=>{S.tri=!S.tri;},
+ cam:(S,m)=>{S.cam=m;},
+ predTop:S=>{if(!S.rev) S.pred='top';}, predMid:S=>{if(!S.rev) S.pred='mid';}, reveal:S=>{if(S.pred) S.rev=true;},
+ setR:(S,v)=>{ S.r=v; if(S.c<v+PRM.CLEAR){ S.c=v+PRM.CLEAR; S.raised=true; } S.ann=true; },
+ setC:(S,v)=>{ S.c=v; S.raised=false; S.ann=true; }, setT:(S,v)=>{ S.T=v; S.ann=true; },
+ reset:S=>{ S.r=DEF.r; S.c=DEF.c; S.T=DEF.T; S.raised=false; S.ann=false; }
+};
+function user(fn){ return e=>{ takeControl(); fn(e); syncUI(S); }; }
+$('b-play').onclick=user(()=>ACT.play(S)); $('b-tri').onclick=user(()=>ACT.tri(S));
+for(const m of ['front','side','cabin','top']) $('cam-'+m).onclick=user(()=>{ if(S.cam===m) return; const k=camK(); camLive.from=k<0.5?camLive.from:camLive.to; camLive.to=m; camLive.t0=performance.now()/1000; ACT.cam(S,m); orbit.yaw=orbit.pitch=0; orbit.zoom=1; });
+$('p-top').onclick=user(()=>ACT.predTop(S)); $('p-mid').onclick=user(()=>ACT.predMid(S)); $('b-rev').onclick=user(()=>ACT.reveal(S)); $('b-reset').onclick=user(()=>ACT.reset(S));
+$('s-t').oninput=user(e=>{ S.t=+e.target.value; S.playing=false; });
+$('s-r').oninput=user(e=>ACT.setR(S,+e.target.value)); $('s-c').oninput=user(e=>ACT.setC(S,+e.target.value)); $('s-T').oninput=user(e=>ACT.setT(S,+e.target.value));
+function camK(){ return PE(performance.now()/1000-camLive.t0,0,camLive.dur); }
+
+/* ================================================================
+   8) الجولة: دالة نقية لزمن الجولة τ ← حالة + مؤشر + تعليق
+   ================================================================ */
+const r1=v=>Math.round(v*2)/2;
+const TOUR=[
+ {d:5.5,ch:0,cap:p=>`عجلة دوّارة: نصف قطرها ${g(p.r)} m، ومركزها على ارتفاع ${g(p.c)} m، وتُكمل دورة في ${g(p.T)} min. أرقام توضيحية.`},
+ {d:8,ch:0,click:'b-play',act:S=>ACT.play(S),cap:()=>'تشغيل: العجلة تدور، ومنحنى ارتفاع الراكب يُرسم لحظة بلحظة.'},
+ {d:8,ch:0,point:'hero',cap:()=>'الخط الأفقي يصل الراكب بنقطته على المنحنى: الارتفاع نفسه في اللحظة نفسها.'},
+ {d:10,ch:1,click:'b-tri',act:S=>ACT.tri(S),cap:p=>`المثلث القائم: الوتر r، والضلع الرأسي r·cos θ، فيكون h = ${g(p.c)} − ${g(p.r)}·cos θ.`},
+ {d:6.5,ch:2,click:'cam-side',act:S=>ACT.cam(S,'side'),cam:'side',cap:()=>'من الجانب: العربة تصعد وتهبط وتبقى معلّقة رأسياً.'},
+ {d:7,ch:2,click:'cam-cabin',act:S=>ACT.cam(S,'cabin'),cam:'cabin',cap:()=>'من داخل العربة: أمامك نقطتك على المنحنى، على ارتفاعك نفسه.'},
+ {d:6.5,ch:2,click:'cam-top',act:S=>ACT.cam(S,'top'),cam:'top',cap:()=>'من الأعلى: لا ترى إلا الحركة الأفقية r·sin θ، ذهاباً وإياباً.'},
+ {d:4.5,ch:2,click:'cam-front',act:S=>ACT.cam(S,'front'),cam:'front',cap:()=>'نعود إلى الأمام.'},
+ {d:8,ch:3,point:'eq',cap:()=>'المعادلة بأرقامها الفعلية تتحدّث مع كل لحظة.'},
+ {d:7,ch:3,point:'circle',cap:()=>'θ = 2πt/T؛ ‏cos θ يحدد الارتفاع، وsin θ يحدد البعد الأفقي عن المركز.'},
+ {d:8,ch:4,click:'p-top',act:S=>ACT.predTop(S),cap:()=>'توقّع: متى يرتفع الراكب أسرع؟ يختار كثيرون «قرب القمة»…'},
+ {d:12,ch:4,click:'b-rev',act:S=>ACT.reveal(S),cap:p=>`اكشف: الميل أكبر عند مستوى المركز (${f(2*Math.PI*p.r/p.T,1)} m/min)، ويقترب من الصفر عند القمة.`},
+ {d:9,ch:5,drag:'s-r',from:20,to:28,set:(S,v)=>ACT.setR(S,r1(v)),cap:()=>'اكسرها: r أكبر ← سعة أكبر، ويرتفع المركز تلقائياً ليبقى الراكب فوق الأرض.'},
+ {d:8,ch:5,drag:'s-c',from:30,to:38,set:(S,v)=>ACT.setC(S,r1(v)),cap:()=>'c أعلى ← المنحنى كله ينزاح إلى الأعلى، وخط الوسط معه.'},
+ {d:9,ch:5,drag:'s-T',from:8,to:4,set:(S,v)=>ACT.setT(S,r1(v)),cap:()=>'T أصغر ← دورة أقصر، فتتقارب القمم على المنحنى.'},
+ {d:5.5,ch:5,click:'b-reset',act:S=>ACT.reset(S),cap:()=>'نعود إلى الأرقام الأصلية.'},
+ {d:6.5,ch:6,point:null,cap:()=>'دورك الآن: اسحب لتدوير المشهد، وعجلة الفأرة للتكبير، وجرّب المنزلقات.'}
+];
+const TOUR_LEN=TOUR.reduce((s,x)=>s+x.d,0);
+const CHAPTERS=[]; TOUR.forEach(st=>{ CHAPTERS[st.ch]=(CHAPTERS[st.ch]||0)+st.d; });
+const CT=0.9; // لحظة النقر داخل الخطوة
+function rectOf(id){ return $(id).getBoundingClientRect(); }
+function centerOf(id){ if(!id){ const r=stage.getBoundingClientRect(); return [r.left+r.width*0.42,r.top+r.height*0.45]; } const r=rectOf(id); return [r.left+r.width/2,r.top+r.height/2]; }
+function thumbOf(id,v){ const e=$(id), r=e.getBoundingClientRect(), k=(v-+e.min)/(+e.max-+e.min); return [r.left+9+k*(r.width-18),r.top+r.height/2]; }
+function tourEval(T){
+ const S=defaults(); const cs={from:'front',to:'front',t0:-9}; let cur=centerOf(null), prev=cur, cap='', ch=0, click=-1, vis=1, step=0;
+ const adv=dt=>{ if(S.playing&&dt>0) S.t=Math.min(PRM.TMAX,S.t+dt*PRM.SPEED); };
+ let s=0;
+ for(let i=0;i<TOUR.length;i++){ const st=TOUR[i]; if(T<s) break; const lt=T-s, end=Math.min(lt,st.d); step=i; ch=st.ch;
+  let tgt = st.click?centerOf(st.click):st.drag?thumbOf(st.drag,st.from):st.point!==undefined?centerOf(st.point):prev;
+  cur=[lerp(prev[0],tgt[0],PE(lt,0,0.8)),lerp(prev[1],tgt[1],PE(lt,0,0.8))];
+  if(st.click){ adv(Math.min(end,CT)); if(lt>=CT){ const from=cs.to; st.act(S); if(st.cam){ cs.from=from; cs.to=st.cam; cs.t0=s+CT; } adv(end-CT); click=lt-CT; } }
+  else if(st.drag){ adv(end); if(lt>=CT){ const v=lerp(st.from,st.to,PE(lt,CT,st.d-0.7)); st.set(S,v); cur=thumbOf(st.drag,legal(S)[st.drag==='s-r'?'r':st.drag==='s-c'?'c':'T']); tgt=thumbOf(st.drag,st.to); click=lt<st.d-0.6?0.05:-1; } }
+  else adv(end);
+  prev=(st.drag)?thumbOf(st.drag,st.to):tgt; s+=st.d; cap=st.cap(legal(S));
+ }
+ if(T>=TOUR_LEN-1.2) vis=cl((TOUR_LEN-T)/1.2);
+ const k=PE(T-cs.t0,0,1.4);
+ return {S,cs:{from:cs.from,to:cs.to,k},cur,cap,ch,click,vis,step};
+}
+function drawCursor(cur,click,vis){ const c=$('cursor'), rp=$('ripple');
+ c.style.opacity=vis; c.style.transform=`translate(${cur[0]-3}px,${cur[1]-3}px) scale(${click>=0&&click<0.18?0.88:1})`;
+ if(click>=0&&click<0.6){ const k=click/0.6; rp.style.opacity=1-k; rp.style.transform=`translate(${cur[0]}px,${cur[1]}px) scale(${0.4+k*1.2})`; } else rp.style.opacity=0; }
+
+/* ================================================================
+   9) التشغيل الحي: الجولة، تسليم التحكم، الهدوء، الأداء
+   ================================================================ */
+const tour={on:false,T:0}; let lastInput=performance.now()/1000, lastFrame=performance.now()/1000;
+function startTour(){ tour.on=true; tour.T=0; orbit.yaw=orbit.pitch=0; orbit.zoom=1; $('tourChip').style.opacity=1; }
+function takeControl(){ lastInput=performance.now()/1000; if(!tour.on) return;
+ const E=tourEval(tour.T); S=E.S; tour.on=false; camLive.from=E.cs.from; camLive.to=E.cs.to; camLive.t0=performance.now()/1000-(E.cs.k>=1?9:E.cs.k*camLive.dur*0.5);
+ $('cap').textContent=''; $('cursor').style.opacity=0; $('ripple').style.opacity=0; $('tourChip').style.opacity=0; syncUI(S); }
+['pointerdown','wheel','keydown','touchstart'].forEach(ev=>addEventListener(ev,e=>{ if(e.isTrusted) takeControl(); },{passive:true,capture:true}));
+// السحب للتدوير، والعجلة/القرص للتكبير
+const ptrs=new Map(); let pinch0=0, zoom0=1;
+gl.addEventListener('pointerdown',e=>{ gl.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,[e.clientX,e.clientY]); if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; pinch0=Math.hypot(a[0]-b[0],a[1]-b[1]); zoom0=orbit.zoom; } });
+gl.addEventListener('pointermove',e=>{ if(!ptrs.has(e.pointerId)) return; const pr=ptrs.get(e.pointerId); const dx=e.clientX-pr[0], dy=e.clientY-pr[1]; ptrs.set(e.pointerId,[e.clientX,e.clientY]); lastInput=performance.now()/1000;
+ if(ptrs.size===1){ orbit.yaw-=dx*0.006; orbit.pitch+=dy*0.005; } else if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; const d=Math.hypot(a[0]-b[0],a[1]-b[1]); if(pinch0>0) orbit.zoom=cl(zoom0*pinch0/d,0.35,2.5); } });
+const endPtr=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) pinch0=0; }; gl.addEventListener('pointerup',endPtr); gl.addEventListener('pointercancel',endPtr);
+gl.addEventListener('wheel',e=>{ e.preventDefault(); orbit.zoom=cl(orbit.zoom*Math.exp(e.deltaY*0.0012),0.35,2.5); },{passive:false});
+gl.addEventListener('dblclick',()=>{ orbit.yaw=orbit.pitch=0; orbit.zoom=1; });
+function resize(){ const r=stage.getBoundingClientRect(); SW=Math.max(1,r.width); SH=Math.max(1,r.height); ASPECT=SW/SH;
+ renderer.setSize(SW,SH,false); DPR=VIDEO?1:Math.min(devicePixelRatio,2); ov.width=SW*DPR; ov.height=SH*DPR; camera.aspect=ASPECT; camera.updateProjectionMatrix(); }
+addEventListener('resize',resize);
+let fpsAcc=0,fpsN=0,fpsT=0;
+function loop(){ const now=performance.now()/1000, dt=Math.min(0.1,now-lastFrame); lastFrame=now;
+ if(document.hidden){ requestAnimationFrame(loop); return; }
+ let cs;
+ if(tour.on){ tour.T+=dt; const E=tourEval(tour.T); S=E.S; cs=E.cs; $('cap').textContent=E.cap; drawCursor(E.cur,E.click,E.vis);
+  const tg=TOUR[E.step]; const id=tg&&(tg.click||tg.drag||tg.point); if(id&&tour.lastStep!==E.step){ tour.lastStep=E.step; const el=$(id); const r=el.getBoundingClientRect(), pr=$('panel').getBoundingClientRect();
+   if(getComputedStyle($('panel')).overflowY==='auto'){ if(r.top<pr.top||r.bottom>pr.bottom) el.scrollIntoView({block:'center',behavior:'smooth'}); } else if(r.top<stage.getBoundingClientRect().bottom||r.bottom>innerHeight) el.scrollIntoView({block:'center',behavior:'smooth'}); }
+  if(tour.T>=TOUR_LEN){ tour.on=false; S.playing=true; camLive.from=camLive.to=S.cam; $('cap').textContent=''; $('tourChip').style.opacity=0; $('cursor').style.opacity=0; lastInput=now; }
+ } else {
+  if(S.playing){ S.t+=dt*PRM.SPEED; if(S.t>PRM.TMAX) S.t=0; }
+  cs={from:camLive.from,to:camLive.to,k:camK()};
+  if(now-lastInput>PRM.IDLE){ S=defaults(); startTour(); }
+ }
+ syncUI(S); render(S,cs);
+ // أداء: إن هبط معدل الإطارات على جهاز «قوي» ننزل إلى الجودة المنخفضة
+ if(quality==='high'){ fpsAcc+=dt; fpsN++; fpsT+=dt; if(fpsT>3){ if(fpsN/fpsAcc<34){ quality='low'; applyQuality(); built={r:-1,c:-1}; } fpsAcc=fpsN=fpsT=0; } }
+ requestAnimationFrame(loop);
+}
+applyQuality();
+
+/* ================================================================
+   10) وضع الفيديو: renderAt(τ) دالة نقية لزمن الجولة
+   ================================================================ */
+window.renderAt=function(T){ const E=tourEval(T); syncUIForce(E.S); const d=render(E.S,E.cs); $('cap').textContent=E.cap; drawCursor(E.cur,E.click,E.vis); return Object.assign({},d,{cap:E.cap,step:E.step}); };
+function syncUIForce(s){ const was=tour.on; tour.on=true; syncUI(s); tour.on=was; }
+window.TOUR_INFO={len:TOUR_LEN,chapters:CHAPTERS,verify:VERIFY};
+window.timeline=function(rate=100){ const out={h:[],playing:[],clicks:[],reveal:-1,len:TOUR_LEN}; let s=0; for(const st of TOUR){ if(st.click) out.clicks.push(+(s+CT).toFixed(3)); if(st.click==='b-rev') out.reveal=s+CT; s+=st.d; }
+ for(let i=0;i<=TOUR_LEN*rate;i++){ const E=tourEval(i/rate); out.h.push(+H(E.S.t,legal(E.S)).toFixed(3)); out.playing.push(E.S.playing?1:0); } return out; };
+window.audit=function(){ const bad=[]; const C=PRM.CAB, hw=C.roofW/2, hh=Math.max(C.bot,C.top);
+ for(let r=PRM.R_MIN;r<=PRM.R_MAX;r+=0.5){ const L=2*r*Math.sin(Math.PI/PRM.N); for(let a=0;a<Math.PI/2;a+=0.01){ if(Math.abs(L*Math.cos(a))<2*hw&&Math.abs(L*Math.sin(a))<C.bot+C.top){ bad.push('cabins overlap r='+r); break; } } }
+ if(PRM.CLEAR-C.bot<=PRM.PLAT) bad.push('cabin hits platform');
+ if(C.roofD/2>=PRM.RIMZ-PRM.RIM_TUBE) bad.push('cabin hits rim plane');
+ if(PRM.LEGZ-0.45<=PRM.RIMZ+PRM.RIM_TUBE) bad.push('leg hits rim');
+ if(PRM.PZ-0.3-0.12<=PRM.RIMZ+PRM.RIM_TUBE) bad.push('board/overlay behind rim');
+ for(let r=PRM.R_MIN;r<=PRM.R_MAX;r+=0.5){ if(Math.max(r,DEF.r)+PRM.GAP-3.2<=r+hw) bad.push('board hits cabins r='+r); }
+ return bad; };
+if(VIDEO){
+ addEventListener('message',e=>{ const m=e.data||{}; if(m.type==='draw'){ const d=window.renderAt(m.T); requestAnimationFrame(()=>requestAnimationFrame(()=>e.source.postMessage({type:'done',id:m.id,d},'*'))); }
+  if(m.type==='timeline') e.source.postMessage({type:'timeline',data:window.timeline(m.rate||100)},'*'); });
+ document.fonts.ready.then(()=>{ resize(); window.renderAt(0); window.READY=true; if(parent!==window) parent.postMessage({type:'ready',info:window.TOUR_INFO},'*'); });
+} else {
+ document.fonts.ready.then(()=>{ resize(); if(Q.has('tour')){ startTour(); tour.T=+Q.get('tour'); } else if(!Q.has('notour')) startTour(); syncUI(S); requestAnimationFrame(loop); });
+}
+</script>
+</body>
+</html>
