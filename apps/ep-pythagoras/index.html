@@ -545,10 +545,10 @@ const TOUR=[
  {d:7,ch:3,point:'life',cap:'حديقة ٤٠ م × ٣٠ م: على الضلعين ٧٠ م، وعلى القطر ٥٠ م فقط. القطر يوفّر ٢٠ م.'},
  {d:4.5,ch:4,click:'p2-any',act:S=>ACT.p2(S,'any'),cap:'توقّع: هل تصلح النظرية لأي مثلث؟'},
  {d:3.5,ch:4,click:'b-zero',act:S=>ACT.zero(S),cap:'نعيد القرص إلى البداية…'},
- {d:7,ch:4,drag:'s-g',from:90,to:120,set:(S,v)=>ACT.setG(S,v),cap:'اكسرها: زاوية ١٢٠° ← وتر أطول، فماء أكثر في مربعه.'},
- {d:10,ch:4,drag:'s-rot',from:0,to:180,set:(S,v)=>ACT.setRot(S,Math.round(v*2)/2),cap:'ندوّر: المربعان لا يتسعان للماء كله، فيبقى فائض في مربع الوتر.'},
- {d:8,ch:5,drag:'s-g',from:120,to:60,set:(S,v)=>ACT.setG(S,v),cap:'زاوية حادة ٦٠°: الماء لا يكفي، فيبقى في المربعين نقص.'},
- {d:7,ch:5,drag:'s-g',from:60,to:90,set:(S,v)=>ACT.setG(S,v),cap:'عند ٩٠° بالضبط فقط: تمام!'},
+ {d:7,ch:4,drag:'s-g',from:90,to:120,set:(S,v)=>ACT.setG(S,v),cap:S=>S.g===90?'اكسرها: نكبّر الزاوية بين الضلعين…':`اكسرها: زاوية ${AR(S.g)}° ← وتر أطول، فماء أكثر في مربعه.`},
+ {d:10,ch:4,drag:'s-rot',from:0,to:180,set:(S,v)=>ACT.setRot(S,Math.round(v*2)/2),cap:S=>frameOf(S).over>0?`المربعان امتلآ، ويبقى فائض ${AR(frameOf(S).over)} سم³ في مربع الوتر.`:'ندوّر القرص: هل يتسع المربعان لماء الوتر الأطول؟'},
+ {d:8,ch:5,drag:'s-g',from:120,to:60,set:(S,v)=>ACT.setG(S,v),cap:S=>S.g>90?`نصغّر الزاوية: ${AR(S.g)}° ما زالت منفرجة، فالفائض باقٍ.`:S.g===90?'٩٠°: لا فائض ولا نقص.':`زاوية حادة ${AR(S.g)}°: الماء لا يكفي، فيبقى نقص ${AR(frameOf(S).under)} سم³.`},
+ {d:7,ch:5,drag:'s-g',from:60,to:90,set:(S,v)=>ACT.setG(S,v),cap:S=>S.g===90?'عند ٩٠° بالضبط فقط: تمام!':`زاوية ${AR(S.g)}°: النقص ${AR(frameOf(S).under)} سم³ يصغر كلما اقتربنا من ٩٠°.`},
  {d:7.5,ch:5,click:'b-rev2',act:S=>ACT.rev2(S),cap:'النظرية للمثلث القائم فقط: جـ^٢ = أ^٢ + ب^٢.'},
  {d:6,ch:6,point:null,cap:'دورك الآن: اسحب لتدوير المشهد، والعجلة للتكبير، وجرّب المنزلقين.'}
 ];
@@ -565,7 +565,7 @@ function tourEval(T){
   cur=[lerp(prev[0],tgt[0],PE(lt,0,0.8)),lerp(prev[1],tgt[1],PE(lt,0,0.8))];
   if(st.click){ if(lt>=CT){ st.act(S); click=lt-CT; } }
   else if(st.drag){ if(lt>=CT){ const v=lerp(st.from,st.to,PE(lt,CT,st.d-1.2)); st.set(S,v); cur=thumbOf(st.drag,st.drag==='s-rot'?S.rot:S.g); click=lt<st.d-0.6?0.05:-1; } }
-  prev=st.drag?thumbOf(st.drag,st.to):tgt; s+=st.d; cap=rich(st.cap); capA=PE(lt,0.1,0.4)*(1-PE(lt,st.d-0.45,st.d-0.05));
+  prev=st.drag?thumbOf(st.drag,st.to):tgt; s+=st.d; cap=rich(typeof st.cap==='function'?st.cap(S):st.cap); capA=PE(lt,0.1,0.4)*(1-PE(lt,st.d-0.45,st.d-0.05));
  }
  if(T>=TOUR_LEN-1.2) vis=cl((TOUR_LEN-T)/1.2);
  return {S,orb:tourOrbit(T),cur,cap,capA,ch,click,vis,step};
