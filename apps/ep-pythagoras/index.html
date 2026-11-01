@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>جهاز فيثاغورس المائي — عُمق</title>
+<meta name="description" content="محاكاة ثلاثية الأبعاد لجهاز فيثاغورس المائي: دوّر القرص وشاهد ماء مربع الوتر يملأ المربعين الآخرين تماماً. من سلسلة «عُمق» — رياضيات تُفهَم… لا تُحفَظ.">
+<style>
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-arabic-400-normal.woff2);font-weight:400;unicode-range:U+0600-06FF,U+200C-200F,U+2066-2069,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-arabic-700-normal.woff2);font-weight:700;unicode-range:U+0600-06FF,U+200C-200F,U+2066-2069,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-arabic-800-normal.woff2);font-weight:800;unicode-range:U+0600-06FF,U+200C-200F,U+2066-2069,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-latin-400-normal.woff2);font-weight:400;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-latin-700-normal.woff2);font-weight:700;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:Cairo;src:url(../../brand/fonts/cairo-latin-800-normal.woff2);font-weight:800;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+:root{--ink:#1D2A3A;--green:#14905A;--mint:#3FD08C;--blue:#1F6FD1;--red:#D6453D;--gold:#E0A526;--paper:#FBF6EA;--card:#fffdf7;--muted:#6f675a;--line:rgba(29,42,58,.14);
+ --cA:#1F7FEA;--cB:#F0604D;--cC:#0FA36B}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Cairo,Tahoma,sans-serif;color:var(--ink);background:var(--paper);-webkit-tap-highlight-color:transparent;overflow:hidden}
+#app{display:flex;flex-direction:row;height:100%;width:100%}
+#panel{width:470px;flex:none;height:100%;overflow-y:auto;padding:12px 14px 16px;background:linear-gradient(180deg,#fffaf0,#f7efdd);border-inline-end:1px solid var(--line);scrollbar-width:thin}
+#colA,#colB{display:flex;flex-direction:column;gap:9px}
+#colB{margin-top:9px}
+#stage{flex:1;position:relative;min-width:0;overflow:hidden;background:radial-gradient(ellipse at 50% 18%,#ffffff 0,#f3f8f6 45%,#e5eef6 100%)}
+#gl,#ov{position:absolute;inset:0;width:100%;height:100%;display:block}
+#gl{touch-action:none;cursor:grab}
+#gl:active{cursor:grabbing}
+#ov{pointer-events:none}
+bdi{unicode-bidi:isolate}
+sup{font-size:.62em;line-height:0;vertical-align:.62em}
+.hd{display:flex;align-items:center;gap:10px}
+.mk{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#22344a,#16222f);position:relative;flex:none;box-shadow:0 4px 10px -4px rgba(10,20,30,.5)}
+.mk:after{content:"";position:absolute;left:8px;right:8px;top:18px;height:3.5px;border-radius:3px;background:var(--mint);transform:rotate(-40deg);box-shadow:0 0 6px var(--mint)}
+.hd h1{font-size:19px;margin:0;line-height:1.3;font-weight:800}
+.tag{display:inline-block;font-size:11.5px;background:var(--ink);color:#fff;border-radius:20px;padding:1px 9px;font-weight:700}
+.card{background:var(--card);border-radius:16px;padding:9px 12px;box-shadow:0 8px 22px -14px rgba(60,40,10,.45);border:1px solid rgba(29,42,58,.06)}
+.ttl{font-weight:800;font-size:14.5px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.btn{min-height:38px;padding:4px 12px;border-radius:12px;border:2px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.btn:hover{border-color:var(--green)}
+.btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.pri{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.pri.on{background:#0d6b42;border-color:#0d6b42}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.xs{min-height:28px;font-size:12px;padding:1px 9px}
+.btn.ok{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.no{background:var(--red);color:#fff;border-color:var(--red)}
+.sl{display:block;font-size:13.5px;font-weight:700;margin-top:3px}
+.sl>span{display:flex;gap:5px;align-items:baseline;flex-wrap:wrap}
+.sl em{font-style:normal;color:var(--muted);font-weight:400;font-size:12px;display:block;width:100%;line-height:1.3}
+.sl b{font-size:16px}
+input[type=range]{width:100%;height:26px;margin:0;accent-color:var(--green);cursor:pointer}
+/* العدّادات */
+.cr{display:grid;grid-template-columns:118px 1fr 92px;align-items:center;gap:8px;font-size:13.5px;font-weight:700;margin:3px 0}
+.cr .nm{color:var(--c)}
+.cr .nm small{color:var(--muted);font-weight:400}
+.bar{height:12px;border-radius:7px;background:rgba(29,42,58,.07);position:relative;overflow:hidden}
+.bar i{position:absolute;inset-block:0;inset-inline-start:0;width:0;border-radius:7px;background:var(--c);box-shadow:0 0 8px var(--c)}
+.cr .vv{text-align:left;font-size:15px}
+.cr .vv b{color:var(--c);font-size:17px}
+.cmp{display:grid;grid-template-columns:1fr 34px 1fr;align-items:center;text-align:center;margin-top:6px;background:#f8f3e6;border-radius:12px;padding:5px 4px}
+.cmp small{display:block;font-size:12px;color:var(--muted);font-weight:700}
+.cmp b{font-size:24px;font-weight:800}
+.cmp .vs{font-size:26px;font-weight:800;color:var(--ink)}
+.cap2{font-size:12.5px;color:var(--muted);margin-top:4px;text-align:center}
+.chk{display:inline-block;font-size:12px;font-weight:700;border-radius:10px;padding:0 8px;background:#e6f6ee;color:#0d6b42}
+.chk.bad{background:#fde7e5;color:var(--red)}
+/* المعادلة */
+#eq .ln{font-size:21px;font-weight:800;line-height:1.75;text-align:center;white-space:nowrap}
+#eq .ln.s{font-size:14.5px;font-weight:700;color:var(--muted);line-height:1.6}
+.A{color:var(--cA)} .B{color:var(--cB)} .C{color:var(--cC)} .R{color:var(--red)}
+details{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.7}
+summary{cursor:pointer;font-weight:700;color:var(--green)}
+#figSvg{width:100%;height:190px;display:block}
+.q{margin:2px 0 5px;font-size:14.5px;font-weight:700;line-height:1.6}
+.rev{font-size:13.5px;line-height:1.7;margin:5px 0 4px}
+.rev:empty{display:none}
+.bt{font-size:13.5px;line-height:1.65;margin-top:5px;border-radius:12px;padding:6px 10px;background:#f8f3e6;transition:box-shadow .3s,background .3s}
+.bq{text-align:center;font-size:18px;font-weight:800;color:var(--green)}
+.bt.ok{background:#e3f7ec;box-shadow:0 0 0 2px var(--mint),0 0 22px rgba(63,208,140,.75);animation:glow 1.4s ease-in-out infinite alternate}
+@keyframes glow{to{box-shadow:0 0 0 2px var(--mint),0 0 34px rgba(63,208,140,.95)}}
+#lifeSvg{width:100%;height:160px;display:block}
+.life p{margin:4px 0 0;font-size:13.5px;line-height:1.7}
+.foot{font-size:11.5px;color:var(--muted);margin:2px 0 0;line-height:1.6}
+.chip{position:absolute;top:12px;padding:3px 11px;border-radius:20px;font-size:12.5px;font-weight:700;pointer-events:none;transition:opacity .4s}
+#tourChip{left:14px;background:var(--ink);color:#fff}
+#cap{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:max-content;max-width:min(820px,calc(100% - 330px));background:rgba(29,42,58,.92);color:#fff;border-radius:16px;padding:8px 18px;font-size:17px;font-weight:700;line-height:1.6;text-align:center;pointer-events:none;opacity:0;box-shadow:0 10px 30px -12px rgba(0,0,0,.5)}
+#sig{position:absolute;left:14px;bottom:9px;font-size:12.5px;font-weight:700;letter-spacing:.2px;color:rgba(29,42,58,.62);pointer-events:none;z-index:4}
+#sig:before{content:"";display:inline-block;width:16px;height:2px;background:var(--gold);vertical-align:middle;margin-inline-end:6px;border-radius:2px}
+#cursor{position:fixed;left:0;top:0;width:30px;height:36px;pointer-events:none;z-index:60;opacity:0;transition:opacity .3s;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
+#ripple{position:fixed;left:0;top:0;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:3px solid var(--gold);pointer-events:none;z-index:59;opacity:0}
+#err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;font-weight:700}
+@media (max-width:860px),(orientation:portrait) and (max-width:1100px){
+ body{overflow:auto}
+ #app{flex-direction:column;height:auto}
+ #stage{order:-1;flex:none;height:min(58vh,calc(85vw + 90px));min-height:320px;position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}
+ #panel{width:100%;height:auto;overflow:visible}
+ #cap{font-size:13.5px;bottom:30px;padding:5px 12px;max-width:94%}
+ #sig{font-size:11.5px;bottom:7px}
+ .cr{grid-template-columns:104px 1fr 84px}
+}
+/* وضع الفيديو: 1920×1012، اللوحة عمودان، والشريط السفلي للهوية */
+body.video #app{width:1920px;height:1012px}
+body.video #panel{width:800px;padding:16px 20px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+body.video #colB{margin-top:0}
+body.video .hd h1{font-size:22px}
+body.video #cap{font-size:25px;bottom:24px;padding:11px 26px;border-radius:20px;max-width:1040px}
+body.video #tourChip,body.video #sig,body.video .foot{display:none}
+body.video *{transition:none!important;animation:none!important}
+body.video #figSvg{height:200px}
+body.video #lifeSvg{height:128px}
+body.video .cr{grid-template-columns:112px 1fr 88px}
+</style>
+</head>
+<body>
+<div id="app">
+ <aside id="panel">
+  <div id="colA">
+   <div class="hd"><span class="mk" aria-hidden="true"></span><div><h1>جهاز فيثاغورس المائي</h1><span class="tag">المتوسط · نظرية فيثاغورس</span></div></div>
+   <section class="card" id="ctl">
+    <label class="sl"><span>زاوية تدوير القرص: <b id="v-rot">٠°</b> <em>(المُدخل الوحيد: كل رقم ورسم يُحسب منه)</em></span><input id="s-rot" type="range" dir="ltr" min="0" max="180" step="0.5" value="0" aria-label="زاوية تدوير القرص"></label>
+    <div class="row" style="margin-top:4px"><button id="b-play" class="btn pri" style="flex:1.4">▶ دوّر القرص</button><button id="b-zero" class="btn" style="flex:1">↺ البداية</button></div>
+   </section>
+   <section class="card" id="cnt">
+    <div class="ttl">حجم الماء في كل حوض <span class="chk" id="chk">فحص الإطار ✓</span></div>
+    <div class="cr" style="--c:var(--cC)"><span class="nm">حوض جـ <small id="n-c">(٥٠ سم)</small></span><span class="bar"><i id="f-c"></i></span><span class="vv"><b id="v-c">٥٠٠٠</b> سم<sup>٣</sup></span></div>
+    <div class="cr" style="--c:var(--cA)"><span class="nm">حوض أ <small>(٣٠ سم)</small></span><span class="bar"><i id="f-a"></i></span><span class="vv"><b id="v-a">٠</b> سم<sup>٣</sup></span></div>
+    <div class="cr" style="--c:var(--cB)"><span class="nm">حوض ب <small>(٤٠ سم)</small></span><span class="bar"><i id="f-b"></i></span><span class="vv"><b id="v-b">٠</b> سم<sup>٣</sup></span></div>
+    <div class="cmp"><div><small>مجموع الصغيرين أ + ب</small><b id="v-ab">٠</b><small id="v-ab2"></small></div><div class="vs" id="v-rel">&lt;</div><div><small>الكبير جـ</small><b id="v-big" class="C">٥٠٠٠</b></div></div>
+    <div class="cap2" id="capTxt"></div>
+   </section>
+   <section class="card" id="eq">
+    <div class="ttl">المعادلة</div>
+    <div class="ln" id="eq1"></div>
+    <div class="ln" id="eq2"></div>
+    <div class="ln" id="eq3"></div>
+    <div class="ln s" id="eq4"></div>
+    <details id="ver"><summary>التحقق من النموذج</summary><div id="verTxt"></div></details>
+   </section>
+  </div>
+  <div id="colB">
+   <section class="card" id="fig"><div class="ttl">المربعات الثلاثة <span style="font-size:12px;color:var(--muted);font-weight:700">تمتلئ مع المجسّم</span></div><svg id="figSvg" aria-label="المربعات الثلاثة على أضلاع المثلث"></svg></section>
+   <section class="card" id="pred">
+    <div class="ttl">توقّع ثم اكشف</div>
+    <p class="q">١) هل ٣ + ٤ = ٥؟</p>
+    <div class="row"><button id="p1-yes" class="btn" style="flex:1">نعم</button><button id="p1-no" class="btn" style="flex:1">لا</button><button id="b-rev1" class="btn pri" disabled>اكشف</button></div>
+    <div id="rev1" class="rev"></div>
+    <p class="q">٢) هل تصلح النظرية لأي مثلث؟</p>
+    <div class="row"><button id="p2-any" class="btn" style="flex:1.3">نعم، لأي مثلث</button><button id="p2-right" class="btn" style="flex:1">للقائم فقط</button><button id="b-rev2" class="btn pri" disabled>اكشف</button></div>
+    <div id="rev2" class="rev"></div>
+   </section>
+   <section class="card" id="brk">
+    <div class="ttl">اكسرها <button id="b-g90" class="btn xs">أعد ٩٠°</button></div>
+    <label class="sl"><span>الزاوية بين الضلعين ٣٠ و٤٠: <b id="v-g">٩٠°</b></span><input id="s-g" type="range" dir="ltr" min="60" max="120" step="1" value="90" aria-label="زاوية المثلث"></label>
+    <div id="brkTxt" class="bt"></div>
+   </section>
+   <section class="card life" id="life">
+    <div class="ttl">من الحياة: حديقة الحي</div>
+    <svg id="lifeSvg" viewBox="0 0 300 166" aria-label="حديقة مستطيلة ٤٠ م في ٣٠ م"></svg>
+    <p>حديقة مستطيلة طولها ٤٠ م وعرضها ٣٠ م. من ركن إلى الركن المقابل: على الضلعين <b><bdi>٤٠ + ٣٠ = ٧٠</bdi> م</b>، وعلى القطر <b class="C">٥٠ م</b> فقط، لأن <bdi>٥٠<sup>٢</sup></bdi> = <bdi>٣٠<sup>٢</sup></bdi> + <bdi>٤٠<sup>٢</sup></bdi>. القطر يوفّر <b class="C">٢٠ م</b>.</p>
+   </section>
+   <p class="foot">الأحواض متصلة بقنوات رفيعة عند رؤوس المثلث، فسطح الماء مستوى أفقي واحد. اسحب المشهد للتدوير، وعجلة الفأرة أو القرص بإصبعين للتكبير، ونقرتان للعودة.</p>
+  </div>
+ </aside>
+ <section id="stage">
+  <canvas id="gl"></canvas><canvas id="ov"></canvas>
+  <div class="chip" id="tourChip">جولة تلقائية · المس للتحكم</div>
+  <div id="cap"></div>
+  <div id="sig">تصميم: أحمد عامري</div>
+  <div id="err">تعذّر تشغيل الرسم ثلاثي الأبعاد على هذا الجهاز.</div>
+ </section>
+</div>
+<svg id="cursor" viewBox="0 0 30 36"><path d="M2 2 L2 28 L9 22 L14 33 L19 31 L14 20 L24 20 Z" fill="#fff" stroke="#1D2A3A" stroke-width="2.4" stroke-linejoin="round"/></svg>
+<div id="ripple"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+/* ================================================================
+   1) المعاملات — كل الأبعاد هنا (بالسنتيمتر). أي تداخل يُصلح برقم في هذه الكتلة.
+   ================================================================ */
+const PRM={
+ A:30, B:40,              // الضلعان (أ رأسي أزرق، ب أفقي مرجاني في الرسم المسطح)
+ DEPTH:2,                 // عمق الأحواض: الحجم = المساحة المغمورة × 2
+ G0:90, G_MIN:60, G_MAX:120,
+ ROT_MAX:180,
+ MARGIN:7,                // هامش القرص حول أبعد رأس
+ WALL:1.0,                // سماكة جدار الحوض (خارج المربع، فلا يغطي الماء)
+ PLATE:1.75,              // لوحا القرص الأمامي والخلفي (الماء بين ±1)
+ STAND_Z:-15,             // الحامل خلف القرص
+ LIFT:13,                 // ارتفاع أسفل القرص عن الأرض
+ LBL_W:34,                // مساحة التسميات على جانبي القرص
+ ROT_SPEED:20,            // درجة/ثانية لزر «دوّر القرص»
+ FULL_EPS:0.0005,         // «ممتلئ» = ≥ 99.95٪ من السعة
+ IDLE:25,
+ ORB0:{yaw:-0.30,pitch:0.08}
+};
+const COL={a:'#1F7FEA',b:'#F0604D',c:'#0FA36B'};          // حدود الأحواض والأرقام
+const WCOL={a:'#3D98FF',b:'#FF7B66',c:'#1CC985'};         // الماء المضيء
+
+/* ---------- أدوات الكتابة العربية ---------- */
+const DIG='٠١٢٣٤٥٦٧٨٩';
+const AR=s=>String(s).replace(/[0-9]/g,d=>DIG[d]).replace(/\./g,'٫').replace(/-/g,'−');
+const fromAR=s=>parseFloat(String(s).replace(/[٠-٩]/g,d=>DIG.indexOf(d)).replace(/٫/g,'.').replace(/−/g,'-'));
+const ARn=(n,d=0)=>{ let s=n.toFixed(d); if(d>0) s=s.replace(/\.?0+$/,''); if(/^-0$/.test(s)) s='0'; return AR(s); };
+const DEG=n=>ARn(n,1)+'°';
+const PW=(b,e)=>`<bdi>${b}</bdi><sup><bdi>${e}</bdi></sup>`;        // أس مرفوع: الأساس ثم الأس عن يساره
+const CM3='سم<sup>٣</sup>';
+const rich=s=>s.replace(/([٠-٩٫]+|جـ|أ|ب)\^([٠-٩]+)/g,(m,b,e)=>PW(b,e)).replace(/سم³/g,CM3);
+
+/* ================================================================
+   2) النموذج — دوال نقية: الهندسة من زاوية المثلث γ، والماء من زاوية التدوير θ
+   ================================================================ */
+const sqOut=(P,Q)=>{ const dx=Q[0]-P[0],dy=Q[1]-P[1]; return [P,Q,[Q[0]+dy,Q[1]-dx],[P[0]+dy,P[1]-dx]]; };  // مربع خارج المثلث (المثلث عكس عقارب الساعة)
+function mec(pts){ let c=[0,0]; for(const p of pts){ c[0]+=p[0]/pts.length; c[1]+=p[1]/pts.length; }   // أصغر دائرة محيطة (تقريب بادويو–كلاركسون)
+ for(let i=1;i<=2500;i++){ let f=pts[0],fd=-1; for(const p of pts){ const d=Math.hypot(p[0]-c[0],p[1]-c[1]); if(d>fd){fd=d;f=p;} } c[0]+=(f[0]-c[0])/(i+1); c[1]+=(f[1]-c[1])/(i+1); }
+ return c; }
+const GC=new Map();
+function geomOf(g){ if(GC.has(g)) return GC.get(g);
+ const a=PRM.A,b=PRM.B,gr=g*Math.PI/180;
+ const c2=a*a+b*b-2*a*b*Math.cos(gr), c=Math.sqrt(c2);      // يُحسب داخلياً ولا يُعرض للطالب
+ const d=(a*a-b*b+c2)/(2*c), h=Math.sqrt(Math.max(0,a*a-d*d));
+ const A=[0,0],B=[c,0],C=[d,h];                              // الوتر أفقي في الأسفل عند التدوير ٠، والرأس C في الأعلى
+ const S0={a:sqOut(C,A),b:sqOut(B,C),c:sqOut(A,B)};
+ const m=mec([...S0.a,...S0.b,...S0.c]); const sh=p=>[p[0]-m[0],p[1]-m[1]];
+ const sq={a:S0.a.map(sh),b:S0.b.map(sh),c:S0.c.map(sh)}, tri={A:sh(A),B:sh(B),C:sh(C)};
+ let R=0; for(const k in sq) for(const p of sq[k]) R=Math.max(R,Math.hypot(p[0],p[1]));
+ const G={g,a,b,c,c2,sq,tri,R,cap:{a:a*a,b:b*b,c:c2},W:c2};  // W: مساحة الماء = مساحة مربع الوتر (يبدأ ممتلئاً)
+ GC.set(g,G); return G; }
+const rotP=(p,co,si)=>[p[0]*co-p[1]*si,p[0]*si+p[1]*co];
+function clipY(poly,L,below){ const out=[]; const inn=p=>below?p[1]<=L:p[1]>=L;
+ for(let i=0;i<poly.length;i++){ const P=poly[i],Q=poly[(i+1)%poly.length], pi=inn(P), qi=inn(Q);
+  if(pi) out.push(P); if(pi!==qi){ const t=(L-P[1])/(Q[1]-P[1]); out.push([P[0]+t*(Q[0]-P[0]),L]); } }
+ return out; }
+const area=poly=>{ let s=0; for(let i=0;i<poly.length;i++){ const P=poly[i],Q=poly[(i+1)%poly.length]; s+=P[0]*Q[1]-Q[0]*P[1]; } return Math.abs(s)/2; };
+const centroid=poly=>{ let x=0,y=0; for(const p of poly){x+=p[0];y+=p[1];} return [x/poly.length,y/poly.length]; };
+/* الماء: مستوى أفقي واحد L يُوجد بالتنصيف بحيث مساحة اتحاد المربعات تحت L = W.
+   المربعات خارج المثلث ولا تتداخل، فالاتحاد = المجموع، والمثلث مستثنى تلقائياً. */
+function waterOf(rot,G){ const th=rot*Math.PI/180, co=Math.cos(th), si=Math.sin(th);
+ const P={}; let lo=Infinity,hi=-Infinity;
+ for(const k of 'abc'){ P[k]=G.sq[k].map(p=>rotP(p,co,si)); for(const p of P[k]){ lo=Math.min(lo,p[1]); hi=Math.max(hi,p[1]); } }
+ const below=L=>area(clipY(P.a,L,true))+area(clipY(P.b,L,true))+area(clipY(P.c,L,true));
+ for(let i=0;i<64;i++){ const m=(lo+hi)/2; if(below(m)<G.W) lo=m; else hi=m; }
+ const L=(lo+hi)/2, wet={}, dry={}, ar={}, vol={};
+ for(const k of 'abc'){ wet[k]=clipY(P[k],L,true); dry[k]=clipY(P[k],L,false); ar[k]=area(wet[k]); vol[k]=ar[k]*PRM.DEPTH; }
+ const tri={A:rotP(G.tri.A,co,si),B:rotP(G.tri.B,co,si),C:rotP(G.tri.C,co,si)};
+ return {rot,th,L,P,wet,dry,ar,vol,tri}; }
+function lrRound(v,total){ // تقريب بأكبر باقٍ: الأعداد الصحيحة المعروضة مجموعها = المجموع المقرَّب بالضبط
+ const fl=v.map(Math.floor); let rest=total-fl.reduce((s,x)=>s+x,0);
+ const ord=v.map((x,i)=>[x-Math.floor(x),i]).sort((p,q)=>q[0]-p[0]); for(let j=0;j<ord.length&&rest>0;j++,rest--) fl[ord[j][1]]++; return fl; }
+/* لقطة الإطار: كل لوحة ورسم ورقم في هذا الإطار يُقرأ منها */
+function frameOf(S){ const G=geomOf(S.g), w=waterOf(S.rot,G), V0=2*G.W;
+ const [ia,ib,ic]=lrRound([w.vol.a,w.vol.b,w.vol.c],Math.round(V0));
+ const fullA=w.ar.a>=G.cap.a*(1-PRM.FULL_EPS), fullB=w.ar.b>=G.cap.b*(1-PRM.FULL_EPS);
+ const legsCap=2*(G.cap.a+G.cap.b);
+ const over=(fullA&&fullB&&ic>=1)?ic:0;                               // فائض: المربعان ممتلئان ويبقى ماء في مربع الوتر
+ const under=(G.g<90&&ic<1)?legsCap-(ia+ib):0;                        // نقص: مربع الوتر فارغ والمربعان لم يمتلئا
+ const tamam=G.g===90&&fullA&&fullB;
+ return {S,G,w,V0,i:{a:ia,b:ib,c:ic},fill:{a:w.ar.a/G.cap.a,b:w.ar.b/G.cap.b,c:w.ar.c/G.cap.c},legsCap,over,under,tamam}; }
+// التحقق اليدوي ثم الآلي: ٠° ← الوتر ٥٠٠٠، ١٨٠° ← ١٨٠٠ + ٣٢٠٠ والسطح على الوتر
+const VERIFY=(()=>{ const G=geomOf(90), w0=waterOf(0,G), w1=waterOf(180,G); const yHyp=w1.tri.A[1];
+ return {v0:[w0.vol.a,w0.vol.b,w0.vol.c],v180:[w1.vol.a,w1.vol.b,w1.vol.c],L180:w1.L,yHyp,yHyp2:w1.tri.B[1],
+  ok:Math.abs(w0.vol.c-5000)<1e-6&&w0.vol.a<1e-6&&w0.vol.b<1e-6&&Math.abs(w1.vol.a-1800)<1e-6&&Math.abs(w1.vol.b-3200)<1e-6&&w1.vol.c<1e-6&&Math.abs(w1.L-yHyp)<1e-6}; })();
+console.assert(VERIFY.ok,'model verify failed',VERIFY);
+
+/* ---------- helpers ---------- */
+function cl(x,a=0,b=1){return Math.max(a,Math.min(b,x));}
+const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const PE=(t,a,b)=>ease(cl((t-a)/(b-a)));
+const lerp=(a,b,k)=>a+(b-a)*k;
+const $=id=>document.getElementById(id);
+const Q=new URLSearchParams(location.search); const VIDEO=Q.has('video');
+if(VIDEO){ document.body.classList.add('video'); $('colA').appendChild($('life')); }   
+const defaults=()=>({rot:0,g:PRM.G0,anim:0,p1:null,rev1:false,p2:null,rev2:false});
+let RMAX=0; for(let g=PRM.G_MIN;g<=PRM.G_MAX;g++) RMAX=Math.max(RMAX,geomOf(g).R);
+const RD=Math.ceil(RMAX+PRM.MARGIN);             // نصف قطر القرص ثابت لكل الزوايا
+const H0=RD+PRM.LIFT;                            // ارتفاع محور الدوران
+
+/* ================================================================
+   3) المشهد ثلاثي الأبعاد
+   ================================================================ */
+const stage=$('stage'), gl=$('gl'), ov=$('ov'), ox=ov.getContext('2d');
+if(!window.THREE){ $('err').style.display='flex'; throw new Error('three.js not loaded'); }
+const LOWDEV=!VIDEO&&(matchMedia('(pointer:coarse)').matches||(navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=4);
+const renderer=new THREE.WebGLRenderer({canvas:gl,antialias:true,alpha:true,preserveDrawingBuffer:VIDEO,powerPreference:'high-performance'});
+renderer.setClearColor(0x000000,0);   // بلا sRGB: ألوان الهوية تظهر كما هي (r128 لا يحوّل ألوان hex)
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(28,1,1,3000);
+scene.add(new THREE.HemisphereLight('#ffffff','#d9e3ec',0.95));
+const sun=new THREE.DirectionalLight('#ffffff',0.62); sun.position.set(-120,260,320); scene.add(sun);
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+const std=(color,o={})=>new THREE.MeshStandardMaterial(Object.assign({color,roughness:.5,metalness:.1},o));
+function cyl(a,b,rad,mat,seg=16){ const v=new THREE.Vector3().subVectors(b,a); const L=v.length();
+ const m=new THREE.Mesh(new THREE.CylinderGeometry(rad,rad,L,seg),mat); m.position.copy(a).addScaledVector(v,.5);
+ m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize()); return m; }
+// ظل ناعم تحت الحامل
+{ const cv=document.createElement('canvas'); cv.width=cv.height=128; const c=cv.getContext('2d'); const gr=c.createRadialGradient(64,64,0,64,64,64);
+ gr.addColorStop(0,'rgba(29,42,58,.32)'); gr.addColorStop(1,'rgba(29,42,58,0)'); c.fillStyle=gr; c.fillRect(0,0,128,128);
+ const m=new THREE.Mesh(new THREE.PlaneGeometry(RD*2.6,RD*1.1),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthWrite:false}));
+ m.rotation.x=-Math.PI/2; m.position.set(0,0,PRM.STAND_Z*0.5); scene.add(m); }
+// الحامل والمحور (ثابتان)
+const MAT={stand:std('#24364b',{metalness:.45,roughness:.38}),foot:std('#33475e',{metalness:.3}),axle:std('#c3cdd8',{metalness:.4,roughness:.35}),
+ rim:std('#b9c8d8',{metalness:.35,roughness:.25}),plate:new THREE.MeshStandardMaterial({color:'#eaf6ff',transparent:true,opacity:.13,roughness:.08,metalness:0,depthWrite:false,side:THREE.DoubleSide}),
+ tri:std('#fffaf1',{roughness:.55}),chan:std('#d5dee8',{metalness:.3})};
+{ const SZ=PRM.STAND_Z, sp=RD*0.62;
+ scene.add(cyl(V(-sp,0,SZ),V(0,H0,SZ),2.4,MAT.stand), cyl(V(sp,0,SZ),V(0,H0,SZ),2.4,MAT.stand), cyl(V(-sp*0.78,H0*0.22,SZ),V(sp*0.78,H0*0.22,SZ),1.5,MAT.stand));
+ for(const x of [-sp,sp]){ const f=new THREE.Mesh(new THREE.BoxGeometry(14,3,24),MAT.foot); f.position.set(x,1.5,SZ); scene.add(f); }
+ scene.add(cyl(V(0,H0,SZ-4),V(0,H0,-PRM.PLATE),1.5,MAT.axle));
+ const hub=new THREE.Mesh(new THREE.CylinderGeometry(2.6,2.6,1.6,32),MAT.axle); hub.rotation.x=Math.PI/2; hub.position.set(0,H0,SZ-0.5); scene.add(hub); }
+// القرص الدوّار: اللوحان والإطار ثابتة الشكل، والمثلث والأحواض تُبنى من γ
+const disc=new THREE.Group(); disc.position.set(0,H0,0); scene.add(disc);
+for(const z of [PRM.PLATE,-PRM.PLATE]){ const p=new THREE.Mesh(new THREE.CircleGeometry(RD,128),MAT.plate); p.position.z=z; p.renderOrder=3; disc.add(p);
+ const r=new THREE.Mesh(new THREE.TorusGeometry(RD,0.9,10,160),MAT.rim); r.position.z=z; disc.add(r); }
+{ const band=new THREE.Mesh(new THREE.CylinderGeometry(RD,RD,PRM.PLATE*2,128,1,true),MAT.plate); band.rotation.x=Math.PI/2; band.renderOrder=3; disc.add(band); }
+let inner=null, builtG=-1;
+function disposeGroup(gp){ if(!gp) return; gp.parent&&gp.parent.remove(gp); gp.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
+const tankMat={}, tintMat={};
+for(const k of 'abc'){ tankMat[k]=std(COL[k],{emissive:COL[k],emissiveIntensity:.25,roughness:.35});
+ tintMat[k]=new THREE.MeshBasicMaterial({color:WCOL[k],transparent:true,opacity:.10,depthWrite:false,side:THREE.DoubleSide}); }
+function buildInner(G){ disposeGroup(inner); inner=new THREE.Group(); const Wl=PRM.WALL, D=PRM.PLATE*2;
+ for(const k of 'abc'){ const s=G.sq[k], cen=centroid(s);
+  const sh=new THREE.Shape(s.map(p=>new THREE.Vector2(p[0],p[1]))); const tint=new THREE.Mesh(new THREE.ShapeGeometry(sh),tintMat[k]); tint.position.z=-1.05; tint.renderOrder=0; inner.add(tint);
+  for(let i=0;i<4;i++){ const P=s[i],Qp=s[(i+1)%4], mx=(P[0]+Qp[0])/2, my=(P[1]+Qp[1])/2; const L=Math.hypot(Qp[0]-P[0],Qp[1]-P[1]);
+   let nx=-(Qp[1]-P[1])/L, ny=(Qp[0]-P[0])/L; if(nx*(mx-cen[0])+ny*(my-cen[1])<0){nx=-nx;ny=-ny;}       // نحو الخارج: الجدار لا يغطي الماء
+   const bar=new THREE.Mesh(new THREE.BoxGeometry(L+Wl*2,Wl,D),tankMat[k]); bar.position.set(mx+nx*Wl/2,my+ny*Wl/2,0); bar.rotation.z=Math.atan2(Qp[1]-P[1],Qp[0]-P[0]); inner.add(bar); } }
+ const t=G.tri, ts=new THREE.Shape([t.A,t.B,t.C].map(p=>new THREE.Vector2(p[0],p[1])));
+ const tg=new THREE.ExtrudeGeometry(ts,{depth:D,bevelEnabled:false}); tg.translate(0,0,-D/2); inner.add(new THREE.Mesh(tg,MAT.tri));   // مثلث مصمت
+ for(const p of [t.A,t.B,t.C]){ const ch=new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,D+0.2,16),MAT.chan); ch.rotation.x=Math.PI/2; ch.position.set(p[0],p[1],0); inner.add(ch); }  // القنوات عند الرؤوس
+ disc.add(inner); builtG=G.g; }
+// الماء: مناشير تُعاد كل إطار من مضلعات النموذج (في إحداثيات العالم، لا تدور مع القرص)
+class Prism{
+ constructor(mat){ this.pos=new Float32Array(30*9); this.nrm=new Float32Array(30*9); this.geo=new THREE.BufferGeometry();
+  this.pa=new THREE.BufferAttribute(this.pos,3); this.na=new THREE.BufferAttribute(this.nrm,3); this.pa.setUsage(THREE.DynamicDrawUsage); this.na.setUsage(THREE.DynamicDrawUsage);
+  this.geo.setAttribute('position',this.pa); this.geo.setAttribute('normal',this.na); this.mesh=new THREE.Mesh(this.geo,mat); this.mesh.frustumCulled=false; this.mesh.renderOrder=1; }
+ set(poly,z0,z1){ let n=0; const P=this.pos,N=this.nrm; const put=(p,z,nx,ny,nz)=>{ const o=n*3; P[o]=p[0];P[o+1]=p[1];P[o+2]=z;N[o]=nx;N[o+1]=ny;N[o+2]=nz;n++; };
+  let pl=poly; if(pl.length>=3){ let s=0; for(let i=0;i<pl.length;i++){ const a=pl[i],b=pl[(i+1)%pl.length]; s+=a[0]*b[1]-b[0]*a[1]; } if(s<0) pl=pl.slice().reverse();
+   if(Math.abs(s)>1e-6){ for(let i=1;i<pl.length-1;i++){ put(pl[0],z1,0,0,1); put(pl[i],z1,0,0,1); put(pl[i+1],z1,0,0,1); put(pl[0],z0,0,0,-1); put(pl[i+1],z0,0,0,-1); put(pl[i],z0,0,0,-1); }
+    for(let i=0;i<pl.length;i++){ const a=pl[i],b=pl[(i+1)%pl.length], dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1, nx=dy/L,ny=-dx/L;
+     put(a,z0,nx,ny,0); put(b,z0,nx,ny,0); put(b,z1,nx,ny,0); put(a,z0,nx,ny,0); put(b,z1,nx,ny,0); put(a,z1,nx,ny,0); } } }
+  this.geo.setDrawRange(0,n); this.pa.needsUpdate=true; this.na.needsUpdate=true; this.mesh.visible=n>0; }
+}
+const water=new THREE.Group(); water.position.set(0,H0,0); scene.add(water);
+const prism={}; for(const k of 'abc'){ prism[k]=new Prism(new THREE.MeshStandardMaterial({color:new THREE.Color(WCOL[k]).multiplyScalar(.35),emissive:WCOL[k],emissiveIntensity:.78,transparent:true,opacity:.9,roughness:.25,metalness:0})); /* ماء مضيء بلون حوضه */ water.add(prism[k].mesh); }
+const level=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.9,depthWrite:false})); level.renderOrder=4; water.add(level);
+
+/* ================================================================
+   4) الكاميرا: إطار يحتوي القرص والحامل والتسميات، وتدوير/تكبير حوله
+   ================================================================ */
+let ASPECT=1.4, DPR=1, SW=1, SH=1;
+function capBand(){ const e=$('cap'), cs=getComputedStyle(e), fs=parseFloat(cs.fontSize)||17;
+ const px=fs*1.6*2+2*(parseFloat(cs.paddingTop)||8)+(parseFloat(cs.bottom)||18)+10; return Math.min(0.3,px/SH); }
+function fitFrame(){ const top=(VIDEO?130:46)/SH, band=capBand(); const xmin=-RD-PRM.LBL_W, xmax=RD+PRM.LBL_W, ymin=-2, ymax=H0+RD+15;
+ const vh=Math.max((ymax-ymin)/(1-band-top),(xmax-xmin)/ASPECT)*1.05, fov=28;
+ const cy=ymax+top*vh-vh/2; return {cy,d:vh/2/Math.tan(fov*Math.PI/360),fov}; }
+function sph(tgt,az,el,R){ return V(tgt.x+R*Math.cos(el)*Math.sin(az),tgt.y+R*Math.sin(el),tgt.z+R*Math.cos(el)*Math.cos(az)); }
+const orbit={yaw:PRM.ORB0.yaw,pitch:PRM.ORB0.pitch,zoom:1};
+function applyCamera(o){ const F=fitFrame(), tgt=V(0,F.cy,0);
+ camera.position.copy(sph(tgt,o.yaw,cl(o.pitch,-0.2,1.2),F.d*o.zoom)); camera.fov=F.fov; camera.updateProjectionMatrix(); camera.lookAt(tgt); }
+
+/* ================================================================
+   5) طبقة التسميات (2D): مواضعها مسقطة من نقاط النموذج، والنص من اليمين مع أسس مرفوعة
+   ================================================================ */
+const LBL=[]; let FS=14;
+function proj(x,y,z){ const v=V(x,y,z).project(camera); if(v.z>1||v.z<-1) return null; return [(v.x+1)/2*SW,(1-v.y)/2*SH]; }
+const W2=(p,z=PRM.PLATE)=>proj(p[0],H0+p[1],z);
+function toks(s){ const out=[]; s.split(/(\^[٠-٩]+)/).forEach(t=>{ if(!t) return; if(t[0]==='^') out.push({t:t.slice(1),sup:1}); else out.push({t}); }); return out; }
+function richW(tk,fs,w){ let W=0; for(const k of tk){ ox.font=`${w} ${k.sup?fs*0.62:fs}px Cairo`; W+=ox.measureText(k.t).width; } return W; }
+function richDraw(tk,xR,y,fs,w,col){ let x=xR; ox.fillStyle=col; ox.textAlign='right'; ox.textBaseline='middle'; ox.direction='rtl';
+ for(const k of tk){ const f=k.sup?fs*0.62:fs; ox.font=`${w} ${f}px Cairo`; ox.fillText(k.t,x,k.sup?y-fs*0.36:y); x-=ox.measureText(k.t).width; } }
+function lab(name,str,q,o={}){ if(!q) return null; const fs=o.fs||FS, w=o.w||800, tk=toks(str), Wd=richW(tk,fs,w), hh=fs*1.45;
+ const X=q[0]+(o.dx||0), Y=q[1]+(o.dy||0); const al=o.al||'c'; const left=al==='l'?X:al==='r'?X-Wd:X-Wd/2; const rect=[left-6,Y-hh/2,Wd+12,hh];
+ if(o.bg!==false){ ox.save(); ox.fillStyle=o.bg||'rgba(255,253,247,.92)'; if(o.glow){ ox.shadowColor=o.glow; ox.shadowBlur=24; } ox.beginPath(); ox.roundRect(rect[0],rect[1],rect[2],rect[3],hh/2.6); ox.fill(); ox.restore(); }
+ richDraw(tk,left+Wd,Y+1,fs,w,o.col||'#1D2A3A'); LBL.push({name,rect}); return rect; }
+function polyPath(poly,z){ const pts=poly.map(p=>W2(p,z)); if(pts.some(p=>!p)||pts.length<3) return false; ox.beginPath(); pts.forEach((p,i)=>i?ox.lineTo(p[0],p[1]):ox.moveTo(p[0],p[1])); ox.closePath(); return true; }
+function checkLabels(points){ const out=[]; for(let i=0;i<LBL.length;i++){ const a=LBL[i].rect;
+  if(a[0]<2||a[1]<2||a[0]+a[2]>SW-2||a[1]+a[3]>SH-2) out.push(LBL[i].name+' خارج الإطار');
+  for(let j=i+1;j<LBL.length;j++){ const b=LBL[j].rect; if(a[0]<b[0]+b[2]&&b[0]<a[0]+a[2]&&a[1]<b[1]+b[3]&&b[1]<a[1]+a[3]) out.push(LBL[i].name+' × '+LBL[j].name); }
+  for(const [pn,pt] of points){ if(pt&&pt[0]>a[0]&&pt[0]<a[0]+a[2]&&pt[1]>a[1]&&pt[1]<a[1]+a[3]) out.push(LBL[i].name+' يغطي '+pn); } }
+ return out; }
+
+/* ================================================================
+   6) اللوحات: تُكتب من لقطة الإطار F وحدها
+   ================================================================ */
+const _cache={}; const setH=(id,h)=>{ if(_cache[id]!==h){ _cache[id]=h; $(id).innerHTML=h; } };
+const setW=(id,v)=>{ const s=(100*cl(v)).toFixed(2)+'%'; if(_cache['w'+id]!==s){ _cache['w'+id]=s; $(id).style.width=s; } };
+let figG=-1; const FIG={};
+function figBuild(G){ // الرسم المسطح كما في الكتاب: أ رأسي، ب يميل عنه بالزاوية γ (أفقي عند ٩٠°)
+ const g=G.g*Math.PI/180, Cp=[0,0], Ap=[0,-PRM.A], Bp=[PRM.B*Math.sin(g),-PRM.B*Math.cos(g)];
+ const away=(P,Qp,Rp)=>{ const dx=Qp[0]-P[0],dy=Qp[1]-P[1]; let o=[dy,-dx]; const mx=(P[0]+Qp[0])/2,my=(P[1]+Qp[1])/2; if(o[0]*(Rp[0]-mx)+o[1]*(Rp[1]-my)>0) o=[-dy,dx]; return o; };
+ const E={a:[Cp,Ap,Bp],b:[Cp,Bp,Ap],c:[Ap,Bp,Cp]}; const sq={}; let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+ for(const k of 'abc'){ const [P,Qp,Rp]=E[k], o=away(P,Qp,Rp); sq[k]={P,Q:Qp,o}; for(const p of [P,Qp,[P[0]+o[0],P[1]+o[1]],[Qp[0]+o[0],Qp[1]+o[1]]]){ x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]); } }
+ const pad=4, svg=$('figSvg'); svg.setAttribute('viewBox',`${x0-pad} ${y0-pad} ${x1-x0+2*pad} ${y1-y0+2*pad}`);
+ const pts=a=>a.map(p=>p[0].toFixed(2)+','+p[1].toFixed(2)).join(' ');
+ let h=''; for(const k of 'abc'){ const {P,Q:Qp,o}=sq[k];
+  h+=`<polygon points="${pts([P,Qp,[Qp[0]+o[0],Qp[1]+o[1]],[P[0]+o[0],P[1]+o[1]]])}" fill="${WCOL[k]}" fill-opacity=".09" stroke="${COL[k]}" stroke-width="1.3"/>`;
+  h+=`<polygon id="fq-${k}" fill="${WCOL[k]}" fill-opacity=".85"/>`; }
+ h+=`<polygon points="${pts([Cp,Ap,Bp])}" fill="#fffaf1" stroke="#1D2A3A" stroke-width="1"/>`;
+ if(G.g===90){ const s=4; h+=`<polyline points="${pts([[0,-s],[s,-s],[s,0]])}" fill="none" stroke="#1D2A3A" stroke-width=".8"/>`; }
+ for(const k of 'abc'){ const {P,Q:Qp,o}=sq[k]; const cx=(P[0]+Qp[0])/2+o[0]/2, cy=(P[1]+Qp[1])/2+o[1]/2; const L=Math.hypot(o[0],o[1]);
+  const fs=Math.max(5.5,Math.min(9,L*0.2));
+  h+=`<text id="ft-${k}" x="${cx.toFixed(2)}" y="${cy.toFixed(2)}" font-size="${fs.toFixed(1)}" font-weight="800" text-anchor="middle" dominant-baseline="central" fill="#1D2A3A" stroke="#fffdf7" stroke-width="2.2" paint-order="stroke" font-family="Cairo"></text>`; }
+ svg.innerHTML=h; Object.assign(FIG,sq); figG=G.g; for(const k in _cache) if(k.startsWith('fig')) delete _cache[k]; }
+function figUpdate(F){ if(figG!==F.G.g) figBuild(F.G);
+ for(const k of 'abc'){ const {P,Q:Qp,o}=FIG[k], f=cl(F.fill[k]); // الامتلاء من الحافة الخارجية نحو الضلع بالنسبة نفسها
+  const p=[[P[0]+o[0],P[1]+o[1]],[Qp[0]+o[0],Qp[1]+o[1]],[Qp[0]+o[0]*(1-f),Qp[1]+o[1]*(1-f)],[P[0]+o[0]*(1-f),P[1]+o[1]*(1-f)]];
+  const s=p.map(q=>q[0].toFixed(2)+','+q[1].toFixed(2)).join(' '); if(_cache['figp'+k]!==s){ _cache['figp'+k]=s; $('fq-'+k).setAttribute('points',s); }
+  const t=AR(F.i[k]); if(_cache['figt'+k]!==t){ _cache['figt'+k]=t; $('ft-'+k).textContent=t; } } }
+function panels(F){ const {S,G,i}=F, right=G.g===90;
+ setH('v-rot',DEG(S.rot)); setH('v-g',ARn(G.g)+'°');
+ setH('v-a',AR(i.a)); setH('v-b',AR(i.b)); setH('v-c',AR(i.c)); setH('n-c','('+(right?'٥٠':'≈ '+ARn(G.c,1))+' سم)');
+ setW('f-a',F.fill.a); setW('f-b',F.fill.b); setW('f-c',F.fill.c);
+ const ab=i.a+i.b; setH('v-ab',AR(ab)); setH('v-ab2',`<bdi><span class="A">${AR(i.a)}</span> + <span class="B">${AR(i.b)}</span></bdi>`); setH('v-big',AR(i.c));
+ setH('v-rel',ab<i.c?'&lt;':ab>i.c?'&gt;':'=');
+ const cA=2*G.cap.a, cB=2*G.cap.b, cC=Math.round(2*G.cap.c);
+ setH('capTxt',right?`السعة: الكبير ${AR(cC)} = الصغيران ${AR(cA)} + ${AR(cB)} ${CM3}`:`السعة: الكبير ${AR(cC)} ${cC>cA+cB?'&gt;':'&lt;'} الصغيران ${AR(cA+cB)} ${CM3}`);
+ if(right){
+  setH('eq1',`<span class="C">${PW('جـ','٢')}</span> = <span class="A">${PW('أ','٢')}</span> + <span class="B">${PW('ب','٢')}</span>`);
+  setH('eq2',`<span class="C">${PW('٥٠','٢')}</span> = <span class="A">${PW('٣٠','٢')}</span> + <span class="B">${PW('٤٠','٢')}</span>`);
+  setH('eq3',`<span class="C">٢٥٠٠</span> = <span class="A">٩٠٠</span> + <span class="B">١٦٠٠</span>`);
+ } else { const c2=G.c2, c2s=Math.abs(c2-Math.round(c2))<1e-6?AR(Math.round(c2)):'≈ '+AR(Math.round(c2));
+  setH('eq1',`<span class="C">${PW('جـ','٢')}</span> <span class="R">≠</span> <span class="A">${PW('أ','٢')}</span> + <span class="B">${PW('ب','٢')}</span>`);
+  setH('eq2',`<span class="C">جـ ≈ ${ARn(G.c,1)} سم</span>`);
+  setH('eq3',`<span class="C">${PW('جـ','٢')} ${c2s.startsWith('≈')?'≈ '+c2s.slice(2):'= '+c2s}</span> ${c2>2500?'&gt;':'&lt;'} <span class="A">٩٠٠</span> + <span class="B">١٦٠٠</span>`); }
+ setH('eq4',`الآن في الأحواض: <bdi><span class="C">${AR(i.c)}</span> + <span class="A">${AR(i.a)}</span> + <span class="B">${AR(i.b)}</span> = ${AR(Math.round(F.V0))}</bdi> ${CM3}`);
+ const exc=Math.round(2*(G.c2-2500));
+ setH('brkTxt',right?'<b>تمام!</b> ٩٠° بالضبط: ماء مربع الوتر يملأ المربعين تماماً.<div class="bq">'+`${PW('جـ','٢')} = ${PW('أ','٢')} + ${PW('ب','٢')}`+'</div>'
+  :G.g>90?`زاوية منفرجة: الوتر أطول (≈ ${ARn(G.c,1)} سم)، وماؤه ${AR(Math.round(F.V0))} ${CM3} أكثر من سعة المربعين ${AR(F.legsCap)}. <b class="R">فائض ${AR(exc)} ${CM3}</b>.`
+  :`زاوية حادة: الوتر أقصر (≈ ${ARn(G.c,1)} سم)، وماؤه ${AR(Math.round(F.V0))} ${CM3} أقل من سعة المربعين ${AR(F.legsCap)}. <b class="R">نقص ${AR(-exc)} ${CM3}</b>.`);
+ $('brkTxt').classList.toggle('ok',right);
+ setH('rev1',S.rev1?(S.p1==='no'?'<b class="C">صحيح ✓</b> ':'<b class="R">ليس كذلك.</b> ')+`الأطوال لا تُجمع: <bdi>٣ + ٤ = ٧</bdi> لا ٥. الذي يُجمع هو <b>المساحات</b>: <bdi>${PW('٣','٢')} + ${PW('٤','٢')} = ٩ + ١٦ = ٢٥ = ${PW('٥','٢')}</bdi>، تماماً كما ملأ ماء المربع الكبير المربعين.`:'');
+ const e120=Math.round(2*(geomOf(120).c2-2500)), e60=Math.round(2*(2500-geomOf(60).c2));
+ setH('rev2',S.rev2?(S.p2==='right'?'<b class="C">صحيح ✓</b> ':'<b class="R">لا.</b> ')+`جرّب منزلق «اكسرها»: عند ١٢٠° يفيض ${AR(e120)} ${CM3}، وعند ٦٠° ينقص ${AR(e60)} ${CM3}. النظرية للمثلث <b>القائم</b> فقط.`:'');
+ figUpdate(F); }
+function verifyText(){ const v=VERIFY, f=x=>AR(Math.round(x));
+ setH('verTxt',`عند ٠°: الماء كله في مربع الوتر: <bdi>٥٠ × ٥٠ × ٢ = ${f(v.v0[2])}</bdi> ${CM3}، والمربعان ${f(v.v0[0])} و${f(v.v0[1])} ✓<br>`+
+  `عند ١٨٠°: <bdi>${f(v.v180[0])} + ${f(v.v180[1])} = ${f(v.v180[0]+v.v180[1])}</bdi> ${CM3} (<bdi>٣٠ × ٣٠ × ٢</bdi> و<bdi>٤٠ × ٤٠ × ٢</bdi>)، ومربع الوتر ${f(v.v180[2])}، والسطح منطبق على الوتر (الفرق ${v.L180-v.yHyp===0?'٠':AR(Math.abs(v.L180-v.yHyp).toExponential(0))} سم) ${v.ok?'✓':'✗'}<br>`+
+  `وفي كل إطار فحص آلي: مجموع الأحجام = حجم الماء ± ١ ${CM3}.`); }
+/* فحص كل إطار: النموذج، ثم الأرقام المعروضة فعلاً كما يقرؤها الطالب */
+function checkFrame(F){ const bad=[], w=F.w, G=F.G;
+ const sum=w.vol.a+w.vol.b+w.vol.c; if(Math.abs(sum-F.V0)>1) bad.push(`sum ${sum.toFixed(3)} ≠ ${F.V0}`);
+ if(G.g===90&&Math.abs(sum-5000)>1) bad.push(`sum ${sum.toFixed(3)} ≠ 5000`);
+ for(const k of 'abc'){ for(const p of w.wet[k]) if(p[1]>w.L+1e-9) bad.push('water above level '+k);
+  if(w.ar[k]>G.cap[k]+1e-6) bad.push('overfull '+k); }
+ const da=fromAR($('v-a').textContent), db=fromAR($('v-b').textContent), dc=fromAR($('v-c').textContent);
+ if(da!==F.i.a||db!==F.i.b||dc!==F.i.c) bad.push('panel ≠ frame');
+ if(da+db+dc!==Math.round(F.V0)) bad.push(`shown sum ${da+db+dc} ≠ ${Math.round(F.V0)}`);
+ for(const k of 'abc'){ if(Math.abs(F.i[k]-w.vol[k])>=1) bad.push('rounding '+k); if(fromAR($('ft-'+k).textContent)!==F.i[k]) bad.push('figure ≠ frame '+k); }
+ if(fromAR($('v-ab').textContent)!==da+db) bad.push('a+b shown');
+ const e=$('chk'); const txt=bad.length?'فحص الإطار ✗':'فحص الإطار ✓'; if(e.textContent!==txt){ e.textContent=txt; e.classList.toggle('bad',bad.length>0); }
+ return bad; }
+
+/* ================================================================
+   7) الرسم: كل شيء من الحالة S
+   ================================================================ */
+const lastDiag={};
+function render(S,o){
+ const F=frameOf(S), G=F.G, w=F.w;
+ if(builtG!==G.g) buildInner(G);
+ disc.rotation.z=w.th;
+ for(const k of 'abc') prism[k].set(w.wet[k],-1,1);
+ const hw=Math.abs(w.L)<RD?Math.sqrt(RD*RD-w.L*w.L):0; level.visible=hw>0; level.scale.set(Math.max(0.01,2*hw),0.42,1); level.position.set(0,w.L,PRM.PLATE+0.12);
+ applyCamera(o); renderer.render(scene,camera);
+ // ---- التسميات
+ ox.setTransform(DPR,0,0,DPR,0,0); ox.clearRect(0,0,SW,SH); LBL.length=0; FS=cl(SH/46,12,VIDEO?25:18);
+ const fwd=new THREE.Vector3(); camera.getWorldDirection(fwd); const facing=Math.abs(fwd.z)>0.5;
+ const t=w.tri, z=PRM.PLATE;
+ if(facing){
+  const pA=W2(t.A),pB=W2(t.B),pC=W2(t.C); const inr=(G.a+G.b+G.c)/2, I=[(G.c*t.C[0]+G.b*t.A[0]+G.a*t.B[0])/(2*inr),(G.c*t.C[1]+G.b*t.A[1]+G.a*t.B[1])/(2*inr)];
+  const scale=pA&&pB?Math.hypot(pA[0]-pB[0],pA[1]-pB[1])/G.c:0;           // بكسل لكل سم
+  // الزاوية عند C
+  const ua=[t.A[0]-t.C[0],t.A[1]-t.C[1]], ub=[t.B[0]-t.C[0],t.B[1]-t.C[1]]; const la=Math.hypot(...ua), lb=Math.hypot(...ub); ua[0]/=la;ua[1]/=la;ub[0]/=lb;ub[1]/=lb;
+  ox.lineWidth=Math.max(1.5,scale*0.35); ox.strokeStyle='#1D2A3A';
+  if(G.g===90){ const s=4.2; const pts=[[t.C[0]+ua[0]*s,t.C[1]+ua[1]*s],[t.C[0]+(ua[0]+ub[0])*s,t.C[1]+(ua[1]+ub[1])*s],[t.C[0]+ub[0]*s,t.C[1]+ub[1]*s]].map(p=>W2(p,z+0.02));
+   if(pts.every(Boolean)){ ox.beginPath(); ox.moveTo(...pts[0]); ox.lineTo(...pts[1]); ox.lineTo(...pts[2]); ox.stroke(); } }
+  else { const a0=Math.atan2(ua[1],ua[0]); let da=Math.atan2(ub[1],ub[0])-a0; while(da>Math.PI) da-=2*Math.PI; while(da<-Math.PI) da+=2*Math.PI;
+   ox.strokeStyle='#b07f10'; ox.beginPath(); for(let j=0;j<=24;j++){ const an=a0+da*j/24, q=W2([t.C[0]+5.5*Math.cos(an),t.C[1]+5.5*Math.sin(an)],z+0.02); if(q) j?ox.lineTo(...q):ox.moveTo(...q); } ox.stroke(); }
+  // أطوال الأضلاع داخل المثلث المصمت (لا تغطي ماءً)
+  if(scale*11.5>FS){   /* أطوال الأضلاع فقط إن اتسع لها المثلث */ const sideLab=(name,P,Q2,txt,col)=>{ const m=[(P[0]+Q2[0])/2,(P[1]+Q2[1])/2], dI=Math.hypot(I[0]-m[0],I[1]-m[1])||1, k=Math.min(0.62,4.2/dI); const q=[m[0]+(I[0]-m[0])*k,m[1]+(I[1]-m[1])*k]; /* ٤٫٢ سم داخل الضلع */ lab(name,txt,W2(q,z+0.02),{col,bg:false,fs:FS*0.95}); };
+   sideLab('ضلع أ',t.C,t.A,'٣٠',COL.a); sideLab('ضلع ب',t.B,t.C,'٤٠',COL.b); sideLab('ضلع جـ',t.A,t.B,G.g===90?'٥٠':ARn(G.c,1),COL.c);
+   if(G.g!==90){ const bis=[ua[0]+ub[0],ua[1]+ub[1]], bl=Math.hypot(...bis)||1; const q=[t.C[0]-bis[0]/bl*15,t.C[1]-bis[1]/bl*15];   /* خارج المثلث في الفجوة بين حوضي الضلعين: لا ماء هناك */
+    lab('γ',ARn(G.g)+'°',W2(q,z+0.02),{col:'#8a6206',fs:FS*0.9}); } }
+  // سطح الماء: مستوى واحد عبر القرص
+  if(hw>0) lab('سطح الماء','سطح الماء',proj(-hw-3,H0+w.L,z),{al:'r',col:'#6f675a',fs:FS*0.88,w:700});
+  // فائض أو نقص: يُحاط ويُرقَّم من الإطار نفسه
+  const side=(name,txt,poly,col)=>{ const c=centroid(poly), qc=W2(c,z+0.05), q=proj(RD+5,H0+cl(c[1],-RD*0.8,RD*0.8),z);
+   if(!qc||!q) return; const r=lab(name,txt,q,{al:'l',col,fs:FS*1.05,bg:'rgba(255,253,247,.96)'}); if(!r) return;
+   ox.save(); ox.strokeStyle=col; ox.lineWidth=2; ox.setLineDash([5,4]); ox.beginPath(); ox.moveTo(r[0],r[1]+r[3]/2); ox.lineTo(qc[0],qc[1]); ox.stroke(); ox.setLineDash([]); ox.fillStyle=col; ox.beginPath(); ox.arc(qc[0],qc[1],3.5,0,7); ox.fill(); ox.restore(); };
+  if(F.over>0){ ox.save(); if(polyPath(w.wet.c,z+0.05)){ ox.setLineDash([7,5]); ox.lineWidth=2.5; ox.strokeStyle='#D6453D'; ox.stroke(); } ox.restore();
+   side('فائض','فائض '+AR(F.over)+' سم^٣',w.wet.c,'#C0392B'); }
+  if(F.under>0){ for(const k of 'ab'){ if(area(w.dry[k])<0.5) continue; ox.save(); if(polyPath(w.dry[k],z+0.05)){ ox.fillStyle='rgba(255,255,255,.55)'; ox.fill();    ox.setLineDash([7,5]); ox.lineWidth=2.2; ox.strokeStyle='#D6453D'; ox.stroke(); } ox.restore(); }
+   const big=area(w.dry.b)>=area(w.dry.a)?'b':'a'; side('نقص','نقص '+AR(F.under)+' سم^٣',w.dry[big],'#C0392B'); }
+  if(F.tamam) lab('تمام','تمام!',proj(0,H0+RD+8,z),{fs:FS*1.7,col:'#0d6b42',bg:'rgba(236,252,244,.97)',glow:'rgba(63,208,140,.95)'});
+ }
+ const pts=[]; for(const k of 'abc') if(F.w.ar[k]>1) pts.push(['ماء '+k,W2(centroid(w.wet[k]))]);
+ pts.push(['رأس أ',W2(t.A)],['رأس ب',W2(t.B)]);
+ const overl=checkLabels(pts);
+ panels(F); const chk=checkFrame(F);
+ Object.assign(lastDiag,{rot:S.rot,g:G.g,L:+w.L.toFixed(4),vol:[w.vol.a,w.vol.b,w.vol.c].map(v=>+v.toFixed(3)),shown:[F.i.a,F.i.b,F.i.c],sum:+(w.vol.a+w.vol.b+w.vol.c).toFixed(4),over:F.over,under:F.under,tamam:F.tamam,overlaps:overl,check:chk});
+ return lastDiag; }
+
+/* ================================================================
+   8) الحالة والأزرار
+   ================================================================ */
+let S=defaults();
+function syncUI(S){
+ const pl=$('b-play'); const t=S.anim?'❚❚ إيقاف':(S.rot>=PRM.ROT_MAX-1e-9?'▶ دوّر عائداً':'▶ دوّر القرص'); if(pl.textContent!==t) pl.textContent=t; pl.classList.toggle('on',!!S.anim);
+ const tog=(id,c,v)=>$(id).classList.toggle(c,!!v);
+ tog('p1-yes','on',S.p1==='yes'&&!S.rev1); tog('p1-no','on',S.p1==='no'&&!S.rev1); tog('p1-yes','no',S.rev1&&S.p1==='yes'); tog('p1-no','ok',S.rev1);
+ tog('p2-any','on',S.p2==='any'&&!S.rev2); tog('p2-right','on',S.p2==='right'&&!S.rev2); tog('p2-any','no',S.rev2&&S.p2==='any'); tog('p2-right','ok',S.rev2);
+ $('b-rev1').disabled=!S.p1||S.rev1; $('b-rev2').disabled=!S.p2||S.rev2;
+ const sv=(id,v)=>{ const e=$(id); if(document.activeElement!==e||tour.on) e.value=v; }; sv('s-rot',S.rot); sv('s-g',S.g);
+}
+const ACT={
+ setRot:(S,v)=>{ S.rot=cl(v,0,PRM.ROT_MAX); S.anim=0; },
+ play:S=>{ S.anim=S.anim?0:(S.rot>=PRM.ROT_MAX-1e-9?-1:1); },
+ zero:S=>{ S.rot=0; S.anim=0; },
+ setG:(S,v)=>{ S.g=Math.round(cl(v,PRM.G_MIN,PRM.G_MAX)); },
+ g90:S=>{ S.g=90; },
+ p1:(S,v)=>{ if(!S.rev1) S.p1=v; }, rev1:S=>{ if(S.p1) S.rev1=true; },
+ p2:(S,v)=>{ if(!S.rev2) S.p2=v; }, rev2:S=>{ if(S.p2) S.rev2=true; }
+};
+function user(fn){ return e=>{ takeControl(); fn(e); syncUI(S); }; }
+$('b-play').onclick=user(()=>ACT.play(S)); $('b-zero').onclick=user(()=>ACT.zero(S)); $('b-g90').onclick=user(()=>ACT.g90(S));
+$('p1-yes').onclick=user(()=>ACT.p1(S,'yes')); $('p1-no').onclick=user(()=>ACT.p1(S,'no')); $('b-rev1').onclick=user(()=>ACT.rev1(S));
+$('p2-any').onclick=user(()=>ACT.p2(S,'any')); $('p2-right').onclick=user(()=>ACT.p2(S,'right')); $('b-rev2').onclick=user(()=>ACT.rev2(S));
+$('s-rot').oninput=user(e=>ACT.setRot(S,+e.target.value)); $('s-g').oninput=user(e=>ACT.setG(S,+e.target.value));
+
+/* ================================================================
+   9) الجولة: دالة نقية لزمن الجولة τ ← حالة + مؤشر + تعليق + زاوية الكاميرا
+   ================================================================ */
+const TOUR=[
+ {d:6,ch:0,point:null,cap:'جهاز فيثاغورس المائي: قرص شفاف، في وسطه مثلث قائم مصمت أضلاعه ٣٠ و٤٠ و٥٠ سم، وعلى كل ضلع حوض مربع عمقه ٢ سم.'},
+ {d:5.5,ch:0,point:'cnt',cap:'الماء يملأ مربع الوتر: ٥٠ × ٥٠ × ٢ = ٥٠٠٠ سم³.'},
+ {d:13,ch:1,drag:'s-rot',from:0,to:180,set:(S,v)=>ACT.setRot(S,Math.round(v*2)/2),cap:'ندوّر القرص: الأحواض متصلة، فسطح الماء مستوى أفقي واحد، والماء ينتقل إلى المربعين.'},
+ {d:7,ch:1,point:'cnt',cap:'انتقل الماء كله: ١٨٠٠ + ٣٢٠٠ = ٥٠٠٠ سم³. امتلأ المربعان تماماً!'},
+ {d:7,ch:2,point:'eq',cap:'جـ^٢ = أ^٢ + ب^٢ ، أي ٥٠^٢ = ٣٠^٢ + ٤٠^٢ ، أي ٢٥٠٠ = ٩٠٠ + ١٦٠٠.'},
+ {d:4.5,ch:2,point:'fig',cap:'الرسم المسطح يمتلئ مع المجسّم: الرقم نفسه في اللحظة نفسها.'},
+ {d:4.5,ch:3,click:'p1-yes',act:S=>ACT.p1(S,'yes'),cap:'توقّع: هل ٣ + ٤ = ٥؟ يجيب كثيرون: نعم…'},
+ {d:8,ch:3,click:'b-rev1',act:S=>ACT.rev1(S),cap:'لا! الأطوال لا تُجمع (٣ + ٤ = ٧). المساحات هي التي تُجمع: ٩ + ١٦ = ٢٥.'},
+ {d:7,ch:3,point:'life',cap:'حديقة ٤٠ م × ٣٠ م: على الضلعين ٧٠ م، وعلى القطر ٥٠ م فقط. القطر يوفّر ٢٠ م.'},
+ {d:4.5,ch:4,click:'p2-any',act:S=>ACT.p2(S,'any'),cap:'توقّع: هل تصلح النظرية لأي مثلث؟'},
+ {d:3.5,ch:4,click:'b-zero',act:S=>ACT.zero(S),cap:'نعيد القرص إلى البداية…'},
+ {d:7,ch:4,drag:'s-g',from:90,to:120,set:(S,v)=>ACT.setG(S,v),cap:'اكسرها: زاوية ١٢٠° ← وتر أطول، فماء أكثر في مربعه.'},
+ {d:10,ch:4,drag:'s-rot',from:0,to:180,set:(S,v)=>ACT.setRot(S,Math.round(v*2)/2),cap:'ندوّر: المربعان لا يتسعان للماء كله، فيبقى فائض في مربع الوتر.'},
+ {d:8,ch:5,drag:'s-g',from:120,to:60,set:(S,v)=>ACT.setG(S,v),cap:'زاوية حادة ٦٠°: الماء لا يكفي، فيبقى في المربعين نقص.'},
+ {d:7,ch:5,drag:'s-g',from:60,to:90,set:(S,v)=>ACT.setG(S,v),cap:'عند ٩٠° بالضبط فقط: تمام!'},
+ {d:7.5,ch:5,click:'b-rev2',act:S=>ACT.rev2(S),cap:'النظرية للمثلث القائم فقط: جـ^٢ = أ^٢ + ب^٢.'},
+ {d:6,ch:6,point:null,cap:'دورك الآن: اسحب لتدوير المشهد، والعجلة للتكبير، وجرّب المنزلقين.'}
+];
+const TOUR_LEN=TOUR.reduce((s,x)=>s+x.d,0);
+const CHAPTERS=[]; TOUR.forEach(st=>{ CHAPTERS[st.ch]=(CHAPTERS[st.ch]||0)+st.d; });
+const CT=0.9;
+function centerOf(id){ if(!id){ const r=stage.getBoundingClientRect(); return [r.left+r.width*0.5,r.top+r.height*0.42]; } const r=$(id).getBoundingClientRect(); return [r.left+r.width/2,r.top+r.height/2]; }
+function thumbOf(id,v){ const e=$(id), r=e.getBoundingClientRect(), k=(v-+e.min)/(+e.max-+e.min); return [r.left+9+k*(r.width-18),r.top+r.height/2]; }
+const tourOrbit=T=>({yaw:PRM.ORB0.yaw+0.12*Math.sin(T*0.19),pitch:PRM.ORB0.pitch+0.03*Math.sin(T*0.13),zoom:1});
+function tourEval(T){
+ const S=defaults(); let cur=centerOf(null), prev=cur, cap='', capA=0, ch=0, click=-1, vis=1, step=0, s=0;
+ for(let i=0;i<TOUR.length;i++){ const st=TOUR[i]; if(T<s) break; const lt=T-s; step=i; ch=st.ch;
+  let tgt=st.click?centerOf(st.click):st.drag?thumbOf(st.drag,st.from):st.point!==undefined?centerOf(st.point):prev;
+  cur=[lerp(prev[0],tgt[0],PE(lt,0,0.8)),lerp(prev[1],tgt[1],PE(lt,0,0.8))];
+  if(st.click){ if(lt>=CT){ st.act(S); click=lt-CT; } }
+  else if(st.drag){ if(lt>=CT){ const v=lerp(st.from,st.to,PE(lt,CT,st.d-1.2)); st.set(S,v); cur=thumbOf(st.drag,st.drag==='s-rot'?S.rot:S.g); click=lt<st.d-0.6?0.05:-1; } }
+  prev=st.drag?thumbOf(st.drag,st.to):tgt; s+=st.d; cap=rich(st.cap); capA=PE(lt,0.1,0.4)*(1-PE(lt,st.d-0.45,st.d-0.05));
+ }
+ if(T>=TOUR_LEN-1.2) vis=cl((TOUR_LEN-T)/1.2);
+ return {S,orb:tourOrbit(T),cur,cap,capA,ch,click,vis,step};
+}
+function drawCursor(cur,click,vis){ const c=$('cursor'), rp=$('ripple');
+ c.style.opacity=vis; c.style.transform=`translate(${cur[0]-3}px,${cur[1]-3}px) scale(${click>=0&&click<0.18?0.88:1})`;
+ if(click>=0&&click<0.6){ const k=click/0.6; rp.style.opacity=1-k; rp.style.transform=`translate(${cur[0]}px,${cur[1]}px) scale(${0.4+k*1.2})`; } else rp.style.opacity=0; }
+let capHTML=''; function setCap(h,a){ if(h!==capHTML){ capHTML=h; $('cap').innerHTML=h; } $('cap').style.opacity=a; }
+window.checkAll=function(step=0.05){ const fails=[]; let n=0; for(let T=0;T<=TOUR_LEN;T+=step){ const F=frameOf(tourEval(T).S); panels(F); const b=checkFrame(F); n++; if(b.length) fails.push([+T.toFixed(2),b]); } return {frames:n,fails:fails.slice(0,20),nFail:fails.length}; };
+window.checkGrid=function(){ const fails=[]; let n=0; for(let g=PRM.G_MIN;g<=PRM.G_MAX;g++) for(let r=0;r<=180;r+=0.5){ const F=frameOf({...defaults(),g,rot:r}); panels(F); const b=checkFrame(F); n++; if(b.length) fails.push([g,r,b]); } return {frames:n,nFail:fails.length,fails:fails.slice(0,10)}; };
+
+/* ================================================================
+   10) التشغيل الحي: الجولة، تسليم التحكم، الهدوء، الأداء
+   ================================================================ */
+const tour={on:false,T:0,lastStep:-1}; let lastInput=performance.now()/1000, lastFrame=performance.now()/1000;
+function startTour(){ tour.on=true; tour.T=0; tour.lastStep=-1; orbit.zoom=1; $('tourChip').style.opacity=1; }
+function takeControl(){ lastInput=performance.now()/1000; if(!tour.on) return;
+ const E=tourEval(tour.T); S=E.S; Object.assign(orbit,E.orb); tour.on=false;
+ setCap('',0); $('cursor').style.opacity=0; $('ripple').style.opacity=0; $('tourChip').style.opacity=0; syncUI(S); }
+['pointerdown','wheel','keydown','touchstart'].forEach(ev=>addEventListener(ev,e=>{ if(e.isTrusted) takeControl(); },{passive:true,capture:true}));
+const ptrs=new Map(); let pinch0=0, zoom0=1;
+gl.addEventListener('pointerdown',e=>{ gl.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,[e.clientX,e.clientY]); if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; pinch0=Math.hypot(a[0]-b[0],a[1]-b[1]); zoom0=orbit.zoom; } });
+gl.addEventListener('pointermove',e=>{ if(!ptrs.has(e.pointerId)) return; const pr=ptrs.get(e.pointerId); const dx=e.clientX-pr[0], dy=e.clientY-pr[1]; ptrs.set(e.pointerId,[e.clientX,e.clientY]); lastInput=performance.now()/1000;
+ if(ptrs.size===1){ orbit.yaw-=dx*0.006; orbit.pitch=cl(orbit.pitch+dy*0.005,-0.2,1.2); } else if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; const d=Math.hypot(a[0]-b[0],a[1]-b[1]); if(pinch0>0) orbit.zoom=cl(zoom0*pinch0/d,0.35,2.2); } });
+const endPtr=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) pinch0=0; }; gl.addEventListener('pointerup',endPtr); gl.addEventListener('pointercancel',endPtr);
+gl.addEventListener('wheel',e=>{ e.preventDefault(); orbit.zoom=cl(orbit.zoom*Math.exp(e.deltaY*0.0012),0.35,2.2); },{passive:false});
+gl.addEventListener('dblclick',()=>{ Object.assign(orbit,PRM.ORB0); orbit.zoom=1; });
+function resize(){ const r=stage.getBoundingClientRect(); SW=Math.max(1,r.width); SH=Math.max(1,r.height); ASPECT=SW/SH;
+ renderer.setPixelRatio(VIDEO?1:Math.min(devicePixelRatio,LOWDEV?1.5:2)); renderer.setSize(SW,SH,false);
+ DPR=VIDEO?1:Math.min(devicePixelRatio,2); ov.width=SW*DPR; ov.height=SH*DPR; camera.aspect=ASPECT; camera.updateProjectionMatrix(); dirty=true; }
+addEventListener('resize',resize);
+let dirty=true, lastKey='';
+function loop(){ const now=performance.now()/1000, dt=Math.min(0.1,now-lastFrame); lastFrame=now;
+ if(document.hidden){ requestAnimationFrame(loop); return; }
+ let o=orbit;
+ if(tour.on){ tour.T+=dt; const E=tourEval(tour.T); S=E.S; o=E.orb; setCap(E.cap,E.capA); drawCursor(E.cur,E.click,E.vis);
+  const tg=TOUR[E.step]; const id=tg&&(tg.click||tg.drag||tg.point); if(id&&tour.lastStep!==E.step){ tour.lastStep=E.step; const el=$(id), r=el.getBoundingClientRect(), pr=$('panel').getBoundingClientRect();
+   if(getComputedStyle($('panel')).overflowY==='auto'){ if(r.top<pr.top||r.bottom>pr.bottom) el.scrollIntoView({block:'center',behavior:'smooth'}); } else if(r.top<stage.getBoundingClientRect().bottom||r.bottom>innerHeight) el.scrollIntoView({block:'center',behavior:'smooth'}); }
+  if(tour.T>=TOUR_LEN){ tour.on=false; Object.assign(orbit,E.orb); setCap('',0); $('tourChip').style.opacity=0; $('cursor').style.opacity=0; lastInput=now; }
+ } else {
+  if(S.anim){ S.rot+=S.anim*PRM.ROT_SPEED*dt; if(S.rot>=PRM.ROT_MAX){ S.rot=PRM.ROT_MAX; S.anim=0; } if(S.rot<=0){ S.rot=0; S.anim=0; } }
+  if(now-lastInput>PRM.IDLE){ S=defaults(); startTour(); }
+ }
+ syncUI(S);
+ // لا نعيد الرسم إن لم يتغير شيء (توفير البطارية على الجوال)
+ const key=[S.rot,S.g,S.p1,S.rev1,S.p2,S.rev2,o.yaw.toFixed(4),o.pitch.toFixed(4),o.zoom.toFixed(4)].join();
+ if(key!==lastKey||dirty){ lastKey=key; dirty=false; render(S,o); }
+ requestAnimationFrame(loop);
+}
+verifyText(); resize();
+
+/* ================================================================
+   11) وضع الفيديو واللقطات: renderAt(τ) دالة نقية لزمن الجولة
+   ================================================================ */
+function syncUIForce(s){ const was=tour.on; tour.on=true; syncUI(s); tour.on=was; }
+window.renderAt=function(T){ const E=tourEval(T); syncUIForce(E.S); const d=render(E.S,E.orb); setCap(E.cap,E.capA); drawCursor(E.cur,E.click,E.vis); return Object.assign({},d,{cap:$('cap').textContent,step:E.step}); };
+window.renderState=function(o){ const s=Object.assign(defaults(),o); syncUIForce(s); const d=render(s,Object.assign({},PRM.ORB0,{zoom:1},o.orb||{})); setCap(o.cap?rich(o.cap):'',o.cap?1:0); $('cursor').style.opacity=0; $('ripple').style.opacity=0; return d; };
+window.TOUR_INFO={len:TOUR_LEN,chapters:CHAPTERS,verify:VERIFY};
+window.timeline=function(rate=100){ // للصوت: سرعة التدفق (سم³/ث من التدوير وحده) ولحظات «تمام» والنقر
+ const out={flow:[],tamam:[],clicks:[],len:TOUR_LEN}; let s=0; for(const st of TOUR){ if(st.click) out.clicks.push(+(s+CT).toFixed(3)); s+=st.d; }
+ let prev=null; for(let i=0;i<=TOUR_LEN*rate;i++){ const E=tourEval(i/rate), G=geomOf(E.S.g); const w=waterOf(E.S.rot,G); const legs=w.vol.a+w.vol.b;
+  let fl=0; if(prev){ const wp=waterOf(prev.rot,G); fl=Math.abs(legs-(wp.vol.a+wp.vol.b))*rate; } prev=E.S;
+  out.flow.push(+fl.toFixed(2)); out.tamam.push(frameOf(E.S).tamam?1:0); }
+ return out; };
+if(VIDEO){
+ addEventListener('message',e=>{ const m=e.data||{}; if(m.type==='draw'){ const d=window.renderAt(m.T); requestAnimationFrame(()=>requestAnimationFrame(()=>e.source.postMessage({type:'done',id:m.id,d},'*'))); }
+  if(m.type==='timeline') e.source.postMessage({type:'timeline',data:window.timeline(m.rate||100)},'*'); });
+ document.fonts.ready.then(()=>{ resize(); window.renderAt(0); window.READY=true; if(parent!==window) parent.postMessage({type:'ready',info:window.TOUR_INFO},'*'); });
+} else {
+ document.fonts.ready.then(()=>{ resize(); if(Q.has('tour')){ startTour(); tour.T=+Q.get('tour'); } else if(!Q.has('notour')) startTour(); syncUI(S); requestAnimationFrame(loop); });
+}
+
+/* رسم الحديقة (ثابت) */
+(function(){ const s=4.2, x0=58, y0=12, W=40*s, H=30*s; let h='';
+ h+=`<rect x="${x0}" y="${y0}" width="${W}" height="${H}" rx="8" fill="#e3f3dc" stroke="#9cc58f" stroke-width="2"/>`;
+ for(const [x,y,r] of [[x0+18,y0+20,9],[x0+W-22,y0+H-26,11],[x0+W*0.62,y0+18,7],[x0+26,y0+H-20,7]]) h+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#9fd08b"/>`;
+ h+=`<path d="M${x0+W} ${y0} L${x0+W} ${y0+H}" stroke="${COL.a}" stroke-width="5" stroke-linecap="round"/>`;
+ h+=`<path d="M${x0} ${y0+H} L${x0+W} ${y0+H}" stroke="${COL.b}" stroke-width="5" stroke-linecap="round"/>`;
+ h+=`<path d="M${x0} ${y0+H} L${x0+W} ${y0}" stroke="${COL.c}" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 7"/>`;
+ h+=`<circle cx="${x0}" cy="${y0+H}" r="6" fill="#1D2A3A"/><circle cx="${x0+W}" cy="${y0}" r="6" fill="#E0A526" stroke="#1D2A3A" stroke-width="1.5"/>`;
+ const t=(x,y,s2,c,a='middle')=>`<text x="${x}" y="${y}" font-size="15" font-weight="800" fill="${c}" text-anchor="${a}" font-family="Cairo">${s2}</text>`;
+ h+=t(x0+W/2,y0+H+20,'٤٠ م',COL.b)+t(x0+W+8,y0+H/2+5,'٣٠ م',COL.a,'end')+t(x0+W/2-14,y0+H/2-6,'٥٠ م',COL.c);
+ $('lifeSvg').innerHTML=h; })();
+</script>
+</body>
+</html>
