@@ -70,7 +70,7 @@ input[type=range]{width:100%;height:26px;margin:0;accent-color:var(--green);curs
 .chip{position:absolute;top:12px;padding:3px 11px;border-radius:20px;font-size:12.5px;font-weight:700;pointer-events:none;transition:opacity .4s}
 #note{right:14px;background:rgba(255,253,247,.9);color:var(--muted);border:1px solid var(--line)}
 #tourChip{left:14px;background:var(--ink);color:#fff}
-#cap{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);max-width:min(860px,86%);background:rgba(29,42,58,.92);color:#fff;border-radius:16px;padding:9px 18px;font-size:17px;font-weight:700;line-height:1.6;text-align:center;pointer-events:none;transition:opacity .35s;box-shadow:0 10px 30px -12px rgba(0,0,0,.5)}
+#cap{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);max-width:min(860px,86%);background:rgba(29,42,58,.92);color:#fff;border-radius:16px;padding:9px 18px;font-size:17px;font-weight:700;line-height:1.6;text-align:center;pointer-events:none;opacity:0;box-shadow:0 10px 30px -12px rgba(0,0,0,.5)}
 #cap:empty{opacity:0}
 #frame{position:absolute;inset:5% 6%;border-radius:38px;box-shadow:0 0 0 200vmax rgba(29,42,58,.78),inset 0 0 0 7px var(--gold);pointer-events:none;opacity:0}
 #cursor{position:fixed;left:0;top:0;width:30px;height:36px;pointer-events:none;z-index:60;opacity:0;transition:opacity .3s;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
@@ -178,7 +178,7 @@ const PRM={
  RIM_TUBE:0.3, HUB:1.6,
  LEGZ:2.9,                    // الأرجل خلف العجلة فقط (2.9−0.45 = 2.45 > 1.9+0.3)
  PZ:2.8,                      // مستوى الرسوم (المنحنى، المثلث، الخط الأفقي) أمام كل الأجسام؛ ظهر اللوحة 2.8−0.3−0.12 = 2.38 > أقصى z للإطار 2.2
- CAP_BAND:0.13,               // شريط أسفل الإطار محجوز للتعليق حتى لا يغطي محور t
+ CAP_SHOW:4,                  // يظهر التعليق 4 ثوانٍ في كل خطوة ثم يختفي
  MARGIN_R:7.5,                // هامش يمين المنحنى لتسميات t (min) وc وقيمة h
  GAP:5.5,                     // المسافة بين مركز العربة الطرفية وبداية محور المنحنى (> 1.2 نصف العربة + 3.2 حافة اللوحة)
  GW:34, GW_N:26,              // عرض المنحنى بالمتر (شاشة عريضة / ضيقة)؛ 34 تجعل العجلة ≈ 63٪ من ارتفاع المشهد
@@ -250,7 +250,7 @@ function applyQuality(){
  resize();
 }
 const std=(color,o={})=>new THREE.MeshStandardMaterial(Object.assign({color,roughness:.6,metalness:.1},o));
-const MAT={rim:std('#2c3e55',{roughness:.42,metalness:.35}),spoke:std('#71808f',{metalness:.3}),leg:std('#3b4d63',{metalness:.25}),
+const MAT={rim:std('#2c3e55',{roughness:.42,metalness:.35}),spoke:std('#c3cbd3',{roughness:.7,metalness:.1}),spokeT:std('#E0A526',{roughness:.45,emissive:'#6b4a05',emissiveIntensity:.25}),leg:std('#7f8d9c',{metalness:.2}),
  hub:std('#1D2A3A',{metalness:.4}),body:std('#f5f1e8'),bodyT:std('#E0A526',{roughness:.45}),roof:std('#1D2A3A'),glass:std('#bcd5e9',{roughness:.25,metalness:.2}),
  plat:std('#d8cbb0'),board:std('#fffdf7',{roughness:.95}),post:std('#c9bc9f'),bld:std('#eadfc7',{roughness:1}),bld2:std('#e2d3b5',{roughness:1}),
  palm:std('#7a6a4f'),frond:std('#5f8f5a'),rider:std('#14905A',{emissive:'#0c5a37',emissiveIntensity:.35}),stub:std('#14905A')};
@@ -281,12 +281,12 @@ function buildWheel(p){
  wheelRot=new THREE.Group(); wheelRot.position.set(0,c,0);
  for(const z of [Z,-Z]){
   const t1=new THREE.Mesh(new THREE.TorusGeometry(rr,PRM.RIM_TUBE,8,lowQ?72:128),MAT.rim); t1.position.z=z; t1.castShadow=true; wheelRot.add(t1);
-  const t2=new THREE.Mesh(new THREE.TorusGeometry(rr*0.56,0.2,6,lowQ?48:96),MAT.rim); t2.position.z=z; t2.castShadow=true; wheelRot.add(t2);
+  const t2=new THREE.Mesh(new THREE.TorusGeometry(rr*0.56,0.11,6,lowQ?48:96),MAT.spoke); t2.position.z=z; t2.castShadow=true; wheelRot.add(t2);
   const hd=new THREE.Mesh(new THREE.CylinderGeometry(PRM.HUB,PRM.HUB,0.5,24),MAT.hub); hd.rotation.x=Math.PI/2; hd.position.z=z; hd.castShadow=true; wheelRot.add(hd);
   for(let k=0;k<PRM.N;k++){ const a=2*Math.PI*k/PRM.N, s=Math.sin(a), co=-Math.cos(a);
-   wheelRot.add(cyl(V(s*PRM.HUB,co*PRM.HUB,z),V(s*rr,co*rr,z),0.12,MAT.spoke,6));            // ضلع
-   const a2=a+Math.PI/PRM.N; wheelRot.add(cyl(V(Math.sin(a2)*rr*0.56,-Math.cos(a2)*rr*0.56,z),V(s*rr,co*rr,z),0.09,MAT.spoke,5)); // تقوية
-   wheelRot.add(cyl(V(s*(rr-PRM.RIM_TUBE*0.5),co*(rr-PRM.RIM_TUBE*0.5),z),V(s*r,co*r,z),0.14,MAT.rim,6));  // ذراع حتى مركز العربة
+   const T0=k===0; // k = 0 يحمل العربة المتابَعة: ضلعه وذراعه ذهبيان وأسمك
+   wheelRot.add(cyl(V(s*PRM.HUB,co*PRM.HUB,z),V(s*rr,co*rr,z),T0?0.2:0.08,T0?MAT.spokeT:MAT.spoke,6));   // ضلع (أُلغيت أضلاع التقوية القطرية)
+   wheelRot.add(cyl(V(s*(rr-PRM.RIM_TUBE*0.5),co*(rr-PRM.RIM_TUBE*0.5),z),V(s*r,co*r,z),T0?0.18:0.12,T0?MAT.spokeT:MAT.rim,6));  // ذراع حتى مركز العربة
    wheelRot.add(cyl(V(s*r,co*r,Math.sign(z)*(PRM.CAB.d/2)),V(s*r,co*r,z),0.11,MAT.hub,6));   // محور العربة القصير
   }
  }
@@ -345,8 +345,11 @@ const B={grid:new Batch('#e2d9c6',400,0.00),gray:new Batch('#98a2ad',1400,0.02),
    4) الكاميرات: كل وضع دالة لحالة النموذج
    ================================================================ */
 let ASPECT=1.6;
+function capBand(){ // ارتفاع التعليق بسطرين + هامشه، كنسبة من ارتفاع المشهد: يُحجز أسفل الإطار فلا يغطي القاعدة ولا محور t
+ const cs=getComputedStyle($('cap')), fs=parseFloat(cs.fontSize)||17; const px=fs*1.6*2+2*(parseFloat(cs.paddingTop)||9)+(parseFloat(cs.bottom)||18)+14;
+ return Math.min(0.32,px/SH); }
 function frontFrame(p){ const L=layout(p,ASPECT); const xmin=-(Math.max(p.r,DEF.r)+1.8), xmax=L.X0+L.GW+PRM.MARGIN_R, ymin=-2.6, ymax=L.HA+4.6;
- const band=L.narrow?0:PRM.CAP_BAND; const vh=Math.max((ymax-ymin)/(1-band),(xmax-xmin)/ASPECT)*1.02, fov=30;
+ const band=capBand(); const vh=Math.max((ymax-ymin)/(1-band),(xmax-xmin)/ASPECT)*1.02, fov=30;
  const cx=(xmin+xmax)/2, cy=ymax+0.01*vh-vh/2; // المحتوى ملتصق بالأعلى، والفراغ الزائد أسفل للتعليق
  return {cx,cy,d:vh/2/Math.tan(fov*Math.PI/360),fov,vh}; }
 function sph(tgt,az,el,R){ return V(tgt.x+R*Math.cos(el)*Math.sin(az),tgt.y+R*Math.sin(el),tgt.z+R*Math.cos(el)*Math.cos(az)); }
@@ -392,11 +395,47 @@ function checkLabels(points){ const out=[]; for(let i=0;i<LBL.length;i++){ const
    6) الرسم: كل شيء يُقرأ من الحالة S والنموذج
    ================================================================ */
 const lastDiag={};
+/* ---- لقطة الإطار: θ وcos θ وsin θ تُحسب مرة واحدة من t نفسه، ومنها كل اللوحات والرسوم ---- */
+function frameOf(S,p){ const t=S.t, th=theta(t,p), co=Math.cos(th), si=Math.sin(th);
+ return {t,p,th,thd:((th%(2*Math.PI))+2*Math.PI)%(2*Math.PI),co,si,h:p.c-p.r*co,x:p.r*si,rate:p.r*2*Math.PI/p.T*si}; }
+function panels(S,F){ const {t,p,th,co,si,h,rate}=F;
+ $('hNum').textContent=f(h,1); $('tNum').innerHTML='<i>t</i> = '+f(t,2)+' min';
+ $('eq2').innerHTML=`<i>h</i>(${f(t,2)}) = ${g(p.c)} − <span class="bl">${g(p.r)}·cos(2π·${f(t,2)}/${g(p.T)})</span>`;
+ $('eq3').innerHTML=`= ${g(p.c)} − ${g(p.r)}·(<span class="bl">${f(co,3)}</span>) = <span class="gr">${f(h,2)} m</span>`;
+ $('eq4').innerHTML=`= ${g(p.c)} + ${g(p.r)}·sin(2π<i>t</i>/${g(p.T)} − π/2) &nbsp;<span dir="rtl" style="font-family:Cairo">جيبٌ مُزاح ربع دورة</span>`;
+ const thd=F.thd;
+ $('cVals').innerHTML=`<i>θ</i> = ${f(thd,2)} rad = ${f(thd*180/Math.PI,1)}°<br><span class="bl">cos <i>θ</i> = ${f(co,3)}</span><br><span class="rd">sin <i>θ</i> = ${f(si,3)}</span>`;
+ const R0=46, qx=R0*si, qy=R0*co; // SVG: y للأسفل، والزاوية من الأسفل عكس عقارب الساعة كما في المشهد
+ const set=(id,a)=>{ const e=$(id); for(const k in a) e.setAttribute(k,a[k]); };
+ set('cR',{x1:0,y1:0,x2:qx,y2:qy}); set('cV',{x1:0,y1:0,x2:0,y2:qy}); set('cH',{x1:0,y1:qy,x2:qx,y2:qy}); set('cP',{cx:qx,cy:qy});
+ const ra=16; set('cArc',{d:thd<0.02?'':`M0 ${ra} A${ra} ${ra} 0 ${thd>Math.PI?1:0} 0 ${ra*si} ${ra*co}`});
+ $('v-r').textContent=g(p.r); $('v-c').textContent=g(p.c); $('v-T').textContent=g(p.T);
+ $('lim').innerHTML=(p.atMin&&S.ann)?`حدّ: <span class="math">${g(p.c)} − ${g(p.r)} = ${g(PRM.CLEAR)} m</span> أقل بُعد بين أسفل الدائرة والأرض${S.raised?'، فرُفع المركز تلقائياً':''}.`:'';
+ const vmax=2*Math.PI*p.r/p.T, vtop=RATE(p.T*7/16,p);
+ $('revTxt').innerHTML=S.rev?(S.pred==='mid'?'<b class="gr">صحيح ✓</b> ':S.pred==='top'?'<b style="color:var(--red)">ليس كذلك.</b> ':'')+
+  `أكبر ميل عند مستوى المركز: <span class="math gr">2π<i>r</i>/<i>T</i> = ${f(vmax,1)} m/min</span>، وقبيل القمة <span class="math">${f(vtop,1)}</span>، وعند القمة <span class="math">0</span>. الميل الآن: <span class="math gr">${f(rate,1)} m/min</span>`:'';
+}
+/* ---- فحص كل إطار: النموذج، ثم الأرقام المعروضة فعلاً كما يقرؤها الطالب ---- */
+const num=s=>parseFloat(String(s).replace(/−/g,'-'));
+function checkFrame(F){ const bad=[], p=F.p;
+ if(Math.abs(F.si*F.si+F.co*F.co-1)>1e-12) bad.push('model sin²+cos²≠1');
+ if(Math.abs(F.h-(p.c-p.r*F.co))>1e-9) bad.push('model h≠c−r·cosθ');
+ const cv=$('cVals').textContent, e3=$('eq3').textContent;
+ const thd=num((cv.match(/θ = (\S+) rad/)||[])[1]), cd=num((cv.match(/cos θ = (\S+)/)||[])[1]), sd=num((cv.match(/sin θ = (\S+)/)||[])[1]);
+ const m3=e3.match(/·\((\S+)\) = (\S+) m/)||[], cd3=num(m3[1]), h3=num(m3[2]), hd=num($('hNum').textContent);
+ if([thd,cd,sd,cd3,h3,hd].some(Number.isNaN)) bad.push('parse');
+ if(Math.abs(sd*sd+cd*cd-1)>2*(Math.abs(sd)+Math.abs(cd))*0.0005+1e-6) bad.push(`shown sin²+cos²=${(sd*sd+cd*cd).toFixed(4)}`);
+ if(Math.abs(Math.cos(thd)-cd)>0.0056||Math.abs(Math.sin(thd)-sd)>0.0056) bad.push(`shown θ=${thd} vs cos=${cd}, sin=${sd}`);
+ if(cd!==cd3) bad.push(`cos panel ${cd} ≠ equation ${cd3}`);
+ if(Math.abs(h3-(p.c-p.r*cd))>p.r*0.0005+0.0051) bad.push(`h=${h3} ≠ ${p.c}−${p.r}·${cd}`);
+ if(Math.abs(hd-h3)>0.0501) bad.push(`hero ${hd} ≠ equation ${h3}`);
+ window.__check=bad; return bad; }
+window.checkAll=function(step=0.05){ const fails=[]; let n=0; for(let T=0;T<=TOUR_LEN;T+=step){ const S=tourEval(T).S, p=legal(S), F=frameOf(S,p); panels(S,F); const b=checkFrame(F); n++; if(b.length) fails.push([+T.toFixed(2),b]); } return {frames:n,fails:fails.slice(0,20),nFail:fails.length}; };
 function render(S,cs){
  const p=legal(S), t=S.t, L=layout(p,ASPECT);
  if(p.r!==built.r||p.c!==built.c) buildWheel(p);
  buildBoard(L);
- const th=theta(t,p), x=X(t,p), h=H(t,p), co=Math.cos(th), si=Math.sin(th), rate=RATE(t,p);
+ const F=frameOf(S,p), {th,x,h,co,si,rate}=F;   // لقطة واحدة: كل رقم في هذا الإطار يُقرأ منها
  wheelRot.rotation.z=th;
  for(let k=0;k<PRM.N;k++){ const [cx,cy]=cabinXY(k,t,p); cabins[k].position.set(cx,cy,0); }
  const [t0]=windowOf(t), sx=L.GW/PRM.WIN, gx=tt=>L.X0+(tt-t0)*sx, penX=gx(t);
@@ -411,6 +450,8 @@ function render(S,cs){
  const tick0=Math.ceil(t0/2-1e-9)*2; for(let tt=tick0;tt<=t0+PRM.WIN+1e-9;tt+=2){ B.grid.seg(gx(tt),0,gx(tt),HA,0.09); B.ink.seg(gx(tt),-0.55,gx(tt),0,0.14); }
  for(let y=0;y<=HA;y+=10) B.ink.seg(X0-0.55,y,X0,y,0.14);
  B.ink.arrow(X0,-0.6,X0,HA+2.4,lw,1.3); B.ink.arrow(X0-0.6,0,X1+2.4,0,lw,1.3);
+ if(t0>0){ for(const d of [0.9,1.5]) B.ink.seg(X0+d-0.3,-0.7,X0+d+0.3,0.7,0.14); }      // علامة قطع: المحور لا يبدأ من 0
+ else { const h0=H(0,p); B.green.seg(X0-0.5,h0,X0+0.5,h0,0.5); }                      // بداية المنحنى: t = 0، h = c − r
  const N=Math.max(2,Math.ceil((t-t0)/PRM.WIN*360)); const pts=[];
  for(let i=0;i<=N;i++){ const tt=t0+(t-t0)*i/N; pts.push([gx(tt),H(tt,p)]); }
  if(differs(p)){ const rp=[]; for(let i=0;i<=N;i++){ const tt=t0+(t-t0)*i/N; rp.push([gx(tt),H(tt,DEF)]); } for(let i=1;i<rp.length;i+=2) B.gray.seg(rp[i-1][0],rp[i-1][1],rp[i][0],rp[i][1],0.14,0.05); }
@@ -439,6 +480,7 @@ function render(S,cs){
  if(!inCab&&facing>0.6){
   for(let y=0;y<=HA;y+=10) lab('h'+y,String(y),X0-0.9,y,PRM.PZ,{al:'r',bg:false,col:'#5b5446',fs:FS*0.92});
   lab('hAxis','h (m)',X0,HA+3.4,PRM.PZ,{it:false,bg:false});
+  lab('win',t0>0?'نافذة متحركة: آخر '+ISO(PRM.WIN+' min')+'، من '+ISO('t = '+g(t0))+' إلى '+ISO(g(t0+PRM.WIN)):'يبدأ المنحنى من '+ISO('t = 0')+' حيث '+ISO('h = '+g(H(0,p))+' m'),X0+4,HA+3.4,PRM.PZ,{math:false,al:'l',col:'#6f675a',fs:FS*0.9});
   for(let tt=tick0;tt<=t0+PRM.WIN+1e-9;tt+=4) if(gx(tt)-X0>2.5) lab('t'+tt,String(Math.round(tt)),gx(tt),-1.9,PRM.PZ,{bg:false,col:'#5b5446',fs:FS*0.92});
   lab('tAxis','t (min)',X1+2.4,-1.9,PRM.PZ,{al:'r',bg:false,dy:1.25});
   if(ann){ lab('cLine','c = '+g(p.c),X1+0.6,p.c,PRM.PZ,{al:'l',col:'#a87808'});
@@ -461,23 +503,8 @@ function render(S,cs){
  }
  const pts2=[['الراكب',proj(x,h,PRM.PZ)],['نقطة المنحنى',proj(penX,h,PRM.PZ)]];
  const overl=checkLabels(inCab?[]:pts2);
- // ---- اللوحات
- $('hNum').textContent=f(h,1); $('tNum').innerHTML='<i>t</i> = '+f(t,2)+' min';
- $('eq2').innerHTML=`<i>h</i>(${f(t,2)}) = ${g(p.c)} − <span class="bl">${g(p.r)}·cos(2π·${f(t,2)}/${g(p.T)})</span>`;
- $('eq3').innerHTML=`= ${g(p.c)} − ${g(p.r)}·(<span class="bl">${f(co,3)}</span>) = <span class="gr">${f(h,2)} m</span>`;
- $('eq4').innerHTML=`= ${g(p.c)} + ${g(p.r)}·sin(2π<i>t</i>/${g(p.T)} − π/2) &nbsp;<span dir="rtl" style="font-family:Cairo">جيبٌ مُزاح ربع دورة</span>`;
- const thd=((th%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
- $('cVals').innerHTML=`<i>θ</i> = ${f(thd,2)} rad = ${f(thd*180/Math.PI,1)}°<br><span class="bl">cos <i>θ</i> = ${f(co,3)}</span><br><span class="rd">sin <i>θ</i> = ${f(si,3)}</span>`;
- const R0=46, qx=R0*si, qy=R0*co; // SVG: y للأسفل، والزاوية من الأسفل عكس عقارب الساعة كما في المشهد
- const set=(id,a)=>{ const e=$(id); for(const k in a) e.setAttribute(k,a[k]); };
- set('cR',{x1:0,y1:0,x2:qx,y2:qy}); set('cV',{x1:0,y1:0,x2:0,y2:qy}); set('cH',{x1:0,y1:qy,x2:qx,y2:qy}); set('cP',{cx:qx,cy:qy});
- const ra=16; set('cArc',{d:thd<0.02?'':`M0 ${ra} A${ra} ${ra} 0 ${thd>Math.PI?1:0} 0 ${ra*si} ${ra*co}`});
- $('v-r').textContent=g(p.r); $('v-c').textContent=g(p.c); $('v-T').textContent=g(p.T);
- $('lim').innerHTML=(p.atMin&&S.ann)?`حدّ: <span class="math">${g(p.c)} − ${g(p.r)} = ${g(PRM.CLEAR)} m</span> أقل بُعد بين أسفل الدائرة والأرض${S.raised?'، فرُفع المركز تلقائياً':''}.`:'';
- const vmax=2*Math.PI*p.r/p.T, vtop=RATE(p.T*7/16,p);
- $('revTxt').innerHTML=S.rev?(S.pred==='mid'?'<b class="gr">صحيح ✓</b> ':S.pred==='top'?'<b style="color:var(--red)">ليس كذلك.</b> ':'')+
-  `أكبر ميل عند مستوى المركز: <span class="math gr">2π<i>r</i>/<i>T</i> = ${f(vmax,1)} m/min</span>، وقبيل القمة <span class="math">${f(vtop,1)}</span>، وعند القمة <span class="math">0</span>. الميل الآن: <span class="math gr">${f(rate,1)} m/min</span>`:'';
- Object.assign(lastDiag,{t,h,x,cos:co,sin:si,rate,cabinY:cabins[0].position.y,riderY:rider.position.y,penY:pen.position.y,hShown:+$('hNum').textContent.replace(MI,'-'),overlaps:overl});
+ panels(S,F); const chk=checkFrame(F);
+ Object.assign(lastDiag,{t,h,x,cos:co,sin:si,rate,cabinY:cabins[0].position.y,riderY:rider.position.y,penY:pen.position.y,hShown:+$('hNum').textContent.replace(MI,'-'),overlaps:overl,check:chk});
  return lastDiag;
 }
 
@@ -540,7 +567,7 @@ function rectOf(id){ return $(id).getBoundingClientRect(); }
 function centerOf(id){ if(!id){ const r=stage.getBoundingClientRect(); return [r.left+r.width*0.42,r.top+r.height*0.45]; } const r=rectOf(id); return [r.left+r.width/2,r.top+r.height/2]; }
 function thumbOf(id,v){ const e=$(id), r=e.getBoundingClientRect(), k=(v-+e.min)/(+e.max-+e.min); return [r.left+9+k*(r.width-18),r.top+r.height/2]; }
 function tourEval(T){
- const S=defaults(); const cs={from:'front',to:'front',t0:-9}; let cur=centerOf(null), prev=cur, cap='', ch=0, click=-1, vis=1, step=0;
+ const S=defaults(); const cs={from:'front',to:'front',t0:-9}; let cur=centerOf(null), prev=cur, cap='', capA=0, ch=0, click=-1, vis=1, step=0;
  const adv=dt=>{ if(S.playing&&dt>0) S.t=Math.min(PRM.TMAX,S.t+dt*PRM.SPEED); };
  let s=0;
  for(let i=0;i<TOUR.length;i++){ const st=TOUR[i]; if(T<s) break; const lt=T-s, end=Math.min(lt,st.d); step=i; ch=st.ch;
@@ -549,11 +576,11 @@ function tourEval(T){
   if(st.click){ adv(Math.min(end,CT)); if(lt>=CT){ const from=cs.to; st.act(S); if(st.cam){ cs.from=from; cs.to=st.cam; cs.t0=s+CT; } adv(end-CT); click=lt-CT; } }
   else if(st.drag){ adv(end); if(lt>=CT){ const v=lerp(st.from,st.to,PE(lt,CT,st.d-0.7)); st.set(S,v); cur=thumbOf(st.drag,legal(S)[st.drag==='s-r'?'r':st.drag==='s-c'?'c':'T']); tgt=thumbOf(st.drag,st.to); click=lt<st.d-0.6?0.05:-1; } }
   else adv(end);
-  prev=(st.drag)?thumbOf(st.drag,st.to):tgt; s+=st.d; cap=st.cap(legal(S));
+  prev=(st.drag)?thumbOf(st.drag,st.to):tgt; s+=st.d; cap=st.cap(legal(S)); capA=PE(lt,0.1,0.4)*(1-PE(lt,PRM.CAP_SHOW,PRM.CAP_SHOW+0.5));
  }
  if(T>=TOUR_LEN-1.2) vis=cl((TOUR_LEN-T)/1.2);
  const k=PE(T-cs.t0,0,1.4);
- return {S,cs:{from:cs.from,to:cs.to,k},cur,cap,ch,click,vis,step};
+ return {S,cs:{from:cs.from,to:cs.to,k},cur,cap,capA,ch,click,vis,step};
 }
 function drawCursor(cur,click,vis){ const c=$('cursor'), rp=$('ripple');
  c.style.opacity=vis; c.style.transform=`translate(${cur[0]-3}px,${cur[1]-3}px) scale(${click>=0&&click<0.18?0.88:1})`;
@@ -583,7 +610,7 @@ let fpsAcc=0,fpsN=0,fpsT=0;
 function loop(){ const now=performance.now()/1000, dt=Math.min(0.1,now-lastFrame); lastFrame=now;
  if(document.hidden){ requestAnimationFrame(loop); return; }
  let cs;
- if(tour.on){ tour.T+=dt; const E=tourEval(tour.T); S=E.S; cs=E.cs; $('cap').textContent=E.cap; drawCursor(E.cur,E.click,E.vis);
+ if(tour.on){ tour.T+=dt; const E=tourEval(tour.T); S=E.S; cs=E.cs; $('cap').textContent=E.cap; $('cap').style.opacity=E.capA; drawCursor(E.cur,E.click,E.vis);
   const tg=TOUR[E.step]; const id=tg&&(tg.click||tg.drag||tg.point); if(id&&tour.lastStep!==E.step){ tour.lastStep=E.step; const el=$(id); const r=el.getBoundingClientRect(), pr=$('panel').getBoundingClientRect();
    if(getComputedStyle($('panel')).overflowY==='auto'){ if(r.top<pr.top||r.bottom>pr.bottom) el.scrollIntoView({block:'center',behavior:'smooth'}); } else if(r.top<stage.getBoundingClientRect().bottom||r.bottom>innerHeight) el.scrollIntoView({block:'center',behavior:'smooth'}); }
   if(tour.T>=TOUR_LEN){ tour.on=false; S.playing=true; camLive.from=camLive.to=S.cam; $('cap').textContent=''; $('tourChip').style.opacity=0; $('cursor').style.opacity=0; lastInput=now; }
@@ -602,7 +629,7 @@ applyQuality();
 /* ================================================================
    10) وضع الفيديو: renderAt(τ) دالة نقية لزمن الجولة
    ================================================================ */
-window.renderAt=function(T){ const E=tourEval(T); syncUIForce(E.S); const d=render(E.S,E.cs); $('cap').textContent=E.cap; drawCursor(E.cur,E.click,E.vis); return Object.assign({},d,{cap:E.cap,step:E.step}); };
+window.renderAt=function(T){ const E=tourEval(T); syncUIForce(E.S); const d=render(E.S,E.cs); $('cap').textContent=E.cap; $('cap').style.opacity=E.capA; drawCursor(E.cur,E.click,E.vis); return Object.assign({},d,{cap:E.cap,step:E.step}); };
 function syncUIForce(s){ const was=tour.on; tour.on=true; syncUI(s); tour.on=was; }
 window.TOUR_INFO={len:TOUR_LEN,chapters:CHAPTERS,verify:VERIFY};
 window.timeline=function(rate=100){ const out={h:[],playing:[],clicks:[],reveal:-1,len:TOUR_LEN}; let s=0; for(const st of TOUR){ if(st.click) out.clicks.push(+(s+CT).toFixed(3)); if(st.click==='b-rev') out.reveal=s+CT; s+=st.d; }

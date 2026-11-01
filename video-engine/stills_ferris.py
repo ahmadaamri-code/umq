@@ -14,6 +14,7 @@ async def main():
         await pg.goto('file:///'+APP.replace('\\','/')+'?video=1'); await pg.wait_for_function('window.READY===true',timeout=60000)
         print('verify',await pg.evaluate('JSON.stringify(TOUR_INFO)'))
         print('audit',await pg.evaluate('JSON.stringify(audit())'))
+        print('checkAll',await pg.evaluate('JSON.stringify(checkAll(0.05))'))
         for T in ts:
             d=await pg.evaluate(f'JSON.stringify(renderAt({T}))'); await pg.wait_for_timeout(60)
             fn=os.path.join(out,f'T{T:06.1f}.png'); await pg.screenshot(path=fn)
