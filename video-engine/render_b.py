@@ -1,10 +1,13 @@
-import asyncio, os, subprocess, json, sys
+import asyncio, os, subprocess, json, sys, pathlib
 PAGE=sys.argv[1]; OUT=sys.argv[2]
 from playwright.async_api import async_playwright
 FPS=30
+URL=pathlib.Path(PAGE).resolve().as_uri()
+# WebGL برمجي في Chromium بلا واجهة (للحلقات ثلاثية الأبعاد)، وiframe محلي يحمل التطبيق
+ARGS=['--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist','--allow-file-access-from-files']
 async def scene(b, i, start, dur):
     pg=await b.new_page(viewport={'width':1920,'height':1080})
-    await pg.goto('file://'+os.path.abspath(PAGE)); await pg.wait_for_function('window.READY===true')
+    await pg.goto(URL); await pg.wait_for_function('window.READY===true',timeout=120000)
     tmp=OUT+f'/s{i}.tmp.mp4'
     ff=subprocess.Popen(['ffmpeg','-y','-loglevel','error','-f','image2pipe','-framerate',str(FPS),'-c:v','mjpeg','-i','-','-c:v','libx264','-preset','veryfast','-crf','18','-pix_fmt','yuv420p','-r',str(FPS),tmp],stdin=subprocess.PIPE)
     n=int(round(dur*FPS))
@@ -17,8 +20,8 @@ async def scene(b, i, start, dur):
 async def main():
     os.makedirs(OUT,exist_ok=True)
     async with async_playwright() as p:
-        b=await p.chromium.launch()
-        pg=await b.new_page(); await pg.goto('file://'+os.path.abspath(PAGE)); await pg.wait_for_function('window.READY===true')
+        b=await p.chromium.launch(args=ARGS)
+        pg=await b.new_page(); await pg.goto(URL); await pg.wait_for_function('window.READY===true',timeout=120000)
         meta=json.loads(await pg.evaluate('JSON.stringify(META)')); await pg.close()
         sem=asyncio.Semaphore(4)
         async def run(i):

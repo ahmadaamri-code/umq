@@ -1,0 +1,63 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- فيديو «العجلة الدوّارة ودالة الجيب»: التطبيق نفسه في وضع الفيديو داخل iframe، وفوقه طبقة الهوية من brand.js.
+     draw(T) دالة نقية للزمن: تطلب من التطبيق حالة الجولة عند T ثم ترسم الهوية فوقها. -->
+<style>
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-arabic-400-normal.woff2);font-weight:400;unicode-range:U+0600-06FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-arabic-600-normal.woff2);font-weight:600;unicode-range:U+0600-06FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-arabic-700-normal.woff2);font-weight:700;unicode-range:U+0600-06FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-arabic-800-normal.woff2);font-weight:800;unicode-range:U+0600-06FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-latin-400-normal.woff2);font-weight:400;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-latin-600-normal.woff2);font-weight:600;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-latin-700-normal.woff2);font-weight:700;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:Cairo;src:url(../brand/fonts/cairo-latin-800-normal.woff2);font-weight:800;unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF,U+2212}
+@font-face{font-family:"STIX Two Text";src:url(../brand/fonts/stix-two-text-latin-400-normal.woff2);font-weight:400;font-style:normal}
+@font-face{font-family:"STIX Two Text";src:url(../brand/fonts/stix-two-text-latin-600-normal.woff2);font-weight:600;font-style:normal}
+html,body{margin:0;width:1920px;height:1080px;background:#fbf6ea;overflow:hidden}
+#app{position:absolute;left:0;top:0;width:1920px;height:1080px;border:0}
+#c{position:absolute;left:0;top:0;width:1920px;height:1080px}
+.pre{position:absolute;opacity:0;font-family:Cairo}
+</style></head><body>
+<iframe id="app" src="../apps/ep-trig-ferris/index.html?video=1"></iframe>
+<canvas id="c"></canvas>
+<div class="pre" style="font-weight:400">عمق a</div><div class="pre" style="font-weight:600">عمق a</div><div class="pre" style="font-weight:700">عمق a</div><div class="pre" style="font-weight:800">عمق a</div>
+<div class="pre" style="font-family:'STIX Two Text'">y = mx + b</div>
+<script>
+'use strict';
+const W=1920,H=1080; const cv=document.getElementById('c'); cv.width=W; cv.height=H; const c=cv.getContext('2d');
+const K={paper:'#fbf5e6',ink:'#2b2925',muted:'#8a806f'};
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const P=(t,a,b)=>ease(cl((t-a)/(b-a)));
+const backE=x=>{x=cl(x);const c1=1.9,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
+function ar(txt,x,y,size,col,{w=700,a=1,align='right'}={}){ if(a<=0) return; c.save(); c.globalAlpha*=a; c.direction='rtl'; c.textAlign=align; c.textBaseline='middle'; c.font=`${w} ${size}px Cairo`; c.fillStyle=col; c.fillText(txt,x,y); c.restore(); }
+function card(x,y,w,h,a=1,col='#fffdf7'){ if(a<=0) return; c.save(); c.globalAlpha*=a; c.shadowColor='rgba(60,40,10,.18)'; c.shadowBlur=30; c.shadowOffsetY=10; c.fillStyle=col; c.beginPath(); c.roundRect(x,y,w,h,26); c.fill(); c.restore(); }
+const EP={title:'العجلة الدوّارة ودالة الجيب',sub:'الدوال المثلثية · الثانوي',next:'جرّب التطبيق بنفسك: الرابط في الوصف'};
+let SC_CORE=null; // يُملأ من فصول الجولة التي يرسلها التطبيق
+const app=document.getElementById('app'); const pending=new Map(); let seq=0, TOUR_LEN=0;
+function appDraw(T){ return new Promise(res=>{ const id=++seq; pending.set(id,res); app.contentWindow.postMessage({type:'draw',T,id},'*'); }); }
+addEventListener('message',e=>{ const m=e.data||{};
+ if(m.type==='done'){ const r=pending.get(m.id); if(r){ pending.delete(m.id); r(m.d); } }
+ if(m.type==='ready'&&!SC_CORE){ TOUR_LEN=m.info.len; SC_CORE=m.info.chapters.map(d=>[()=>{},d]); app.contentWindow.postMessage({type:'timeline',rate:100},'*'); }
+ if(m.type==='timeline'){ window.TIMELINE=m.data; const s=document.createElement('script'); s.src='brand.js'; s.onload=boot; document.body.appendChild(s); }
+});
+function boot(){
+ // نستبدل draw في brand.js: المقدمة والخاتمة من الهوية، والمشاهد من التطبيق
+ window.draw=async function(T){
+  let si=SC.length-1; for(let i=0;i<SC.length;i++){ if(T<START[i]+SC[i][1]){ si=i; break; } }
+  const lt=T-START[si], dur=SC[si][1];
+  const tourT=cl(T-START[1],0,TOUR_LEN);
+  await appDraw(tourT);
+  c.setTransform(1,0,0,1,0,0); c.globalAlpha=1; c.clearRect(0,0,W,H);
+  if(si===0){ paintBG(bx,T,true); c.drawImage(bgc,0,0); sIntro(lt); cv.style.opacity=cl((dur-lt)/0.5); }
+  else if(si===SC.length-1){ paintBG(bx,T,false); c.drawImage(bgc,0,0); sOutro(lt);
+   if(lt>dur-0.6){ c.fillStyle='#fbf6ea'; c.globalAlpha=cl((lt-(dur-0.6))/0.6); c.fillRect(0,0,W,H); c.globalAlpha=1; }
+   cv.style.opacity=cl(lt/0.5); }
+  else { brandChrome(si,lt,dur); cv.style.opacity=1; }
+  return si;
+ };
+ window.META={START,DUR:SC.map(x=>x[1]),TOTAL,TOUR_LEN,CORE0:START[1]};
+ document.fonts.ready.then(()=>window.draw(0)).then(()=>{ window.READY=true; });
+}
+</script>
+</body></html>
