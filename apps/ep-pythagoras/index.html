@@ -85,6 +85,8 @@ summary{cursor:pointer;font-weight:700;color:var(--green)}
 .chip{position:absolute;top:12px;padding:3px 11px;border-radius:20px;font-size:12.5px;font-weight:700;pointer-events:none;transition:opacity .4s}
 #tourChip{left:14px;background:var(--ink);color:#fff}
 #cap{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:max-content;max-width:min(820px,calc(100% - 330px));background:rgba(29,42,58,.92);color:#fff;border-radius:16px;padding:8px 18px;font-size:17px;font-weight:700;line-height:1.6;text-align:center;pointer-events:none;opacity:0;box-shadow:0 10px 30px -12px rgba(0,0,0,.5)}
+#stage.narrow #cap{bottom:30px;max-width:94%;font-size:14px;padding:5px 12px}
+#stage.narrow #sig{bottom:7px;font-size:11.5px}
 #sig{position:absolute;left:14px;bottom:9px;font-size:12.5px;font-weight:700;letter-spacing:.2px;color:rgba(29,42,58,.62);pointer-events:none;z-index:4}
 #sig:before{content:"";display:inline-block;width:16px;height:2px;background:var(--gold);vertical-align:middle;margin-inline-end:6px;border-radius:2px}
 #cursor{position:fixed;left:0;top:0;width:30px;height:36px;pointer-events:none;z-index:60;opacity:0;transition:opacity .3s;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
@@ -474,8 +476,12 @@ function render(S,o){
   else { const a0=Math.atan2(ua[1],ua[0]); let da=Math.atan2(ub[1],ub[0])-a0; while(da>Math.PI) da-=2*Math.PI; while(da<-Math.PI) da+=2*Math.PI;
    ox.strokeStyle='#b07f10'; ox.beginPath(); for(let j=0;j<=24;j++){ const an=a0+da*j/24, q=W2([t.C[0]+5.5*Math.cos(an),t.C[1]+5.5*Math.sin(an)],z+0.02); if(q) j?ox.lineTo(...q):ox.moveTo(...q); } ox.stroke(); }
   // أطوال الأضلاع داخل المثلث المصمت (لا تغطي ماءً)
-  if(scale*11.5>FS){   /* أطوال الأضلاع فقط إن اتسع لها المثلث */ const sideLab=(name,P,Q2,txt,col)=>{ const m=[(P[0]+Q2[0])/2,(P[1]+Q2[1])/2], dI=Math.hypot(I[0]-m[0],I[1]-m[1])||1, k=Math.min(0.62,4.2/dI); const q=[m[0]+(I[0]-m[0])*k,m[1]+(I[1]-m[1])*k]; /* ٤٫٢ سم داخل الضلع */ lab(name,txt,W2(q,z+0.02),{col,bg:false,fs:FS*0.95}); };
-   sideLab('ضلع أ',t.C,t.A,'٣٠',COL.a); sideLab('ضلع ب',t.B,t.C,'٤٠',COL.b); sideLab('ضلع جـ',t.A,t.B,G.g===90?'٥٠':ARn(G.c,1),COL.c);
+  { /* أطوال الأضلاع داخل المثلث، ٤٫٢ سم من كل ضلع؛ تُقاس أولاً ولا تُرسم إن تلامست */
+   const fsS=FS*0.95, sl=[['ضلع أ',t.C,t.A,'٣٠',COL.a],['ضلع ب',t.B,t.C,'٤٠',COL.b],['ضلع جـ',t.A,t.B,G.g===90?'٥٠':ARn(G.c,1),COL.c]].map(([name,P,Q2,txt,col])=>{
+    const m=[(P[0]+Q2[0])/2,(P[1]+Q2[1])/2], dI=Math.hypot(I[0]-m[0],I[1]-m[1])||1, k=Math.min(0.62,4.2/dI); const q=W2([m[0]+(I[0]-m[0])*k,m[1]+(I[1]-m[1])*k],z+0.02);
+    return {name,txt,col,q,w:richW(toks(txt),fsS,800)+12,h:fsS*1.45}; });
+   const fits=sl.every(a=>a.q)&&sl.every((a,i)=>sl.every((b,j)=>j<=i||Math.abs(a.q[0]-b.q[0])>(a.w+b.w)/2+4||Math.abs(a.q[1]-b.q[1])>(a.h+b.h)/2+2));
+   if(fits) for(const a of sl) lab(a.name,a.txt,a.q,{col:a.col,bg:false,fs:fsS});
    if(G.g!==90){ const bis=[ua[0]+ub[0],ua[1]+ub[1]], bl=Math.hypot(...bis)||1; const q=[t.C[0]-bis[0]/bl*15,t.C[1]-bis[1]/bl*15];   /* خارج المثلث في الفجوة بين حوضي الضلعين: لا ماء هناك */
     lab('γ',ARn(G.g)+'°',W2(q,z+0.02),{col:'#8a6206',fs:FS*0.9}); } }
   // سطح الماء: مستوى واحد عبر القرص
@@ -587,7 +593,7 @@ gl.addEventListener('pointermove',e=>{ if(!ptrs.has(e.pointerId)) return; const 
 const endPtr=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) pinch0=0; }; gl.addEventListener('pointerup',endPtr); gl.addEventListener('pointercancel',endPtr);
 gl.addEventListener('wheel',e=>{ e.preventDefault(); orbit.zoom=cl(orbit.zoom*Math.exp(e.deltaY*0.0012),0.35,2.2); },{passive:false});
 gl.addEventListener('dblclick',()=>{ Object.assign(orbit,PRM.ORB0); orbit.zoom=1; });
-function resize(){ const r=stage.getBoundingClientRect(); SW=Math.max(1,r.width); SH=Math.max(1,r.height); ASPECT=SW/SH;
+function resize(){ const r=stage.getBoundingClientRect(); SW=Math.max(1,r.width); SH=Math.max(1,r.height); ASPECT=SW/SH; stage.classList.toggle('narrow',!VIDEO&&SW<760);
  renderer.setPixelRatio(VIDEO?1:Math.min(devicePixelRatio,LOWDEV?1.5:2)); renderer.setSize(SW,SH,false);
  DPR=VIDEO?1:Math.min(devicePixelRatio,2); ov.width=SW*DPR; ov.height=SH*DPR; camera.aspect=ASPECT; camera.updateProjectionMatrix(); dirty=true; }
 addEventListener('resize',resize);

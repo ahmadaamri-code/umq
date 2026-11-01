@@ -51,8 +51,15 @@ const SCX=[[sIntro,3.6],...SC_CORE,[sOutro,4.5]];
 const SC=SCX;
 const START=[]; {let s=0; for(const x of SC){ START.push(s); s+=x[1]; } }
 const TOTAL=START[START.length-1]+SC[SC.length-1][1];
+// التوقيع بجانب الشعار أعلى اليسار، في كل مشاهد الفيديو (بعيداً عن شريط التقدم أسفل اليسار)
+function signChrome(dark=false,a=1){ if(a<=0) return; c.save(); c.globalAlpha*=a;
+ logoMark(c,74,70,56,1,{dark}); wordmark(c,116,72,38,dark?'#ffffff':BR.ink,'left');
+ c.font='800 38px Cairo'; const w=c.measureText(BR.name).width; const x=116+w+22;
+ c.fillStyle=BR.gold; c.fillRect(x,71,22,3);
+ c.direction='rtl'; c.textAlign='left'; c.textBaseline='middle'; c.font='700 23px Cairo'; c.fillStyle=dark?'rgba(255,255,255,.72)':'rgba(29,42,58,.66)';
+ const t='تصميم: أحمد عامري'; c.textAlign='right'; c.fillText(t,x+32+c.measureText(t).width,73); c.restore(); }
 function brandChrome(si,lt,dur){
- logoMark(c,74,70,56,1); wordmark(c,116,72,38,BR.ink,'left');
+ signChrome(false);
  ar(EP.title+' · '+EP.sub,1820,1042,24,K.muted,{w:600});
  const core=SC.length-2; for(let i=1;i<=core;i++){ const x=110+(i-1)*58; const f= i<si?1: i>si?0: cl(lt/dur);
   c.fillStyle='rgba(29,42,58,.09)'; c.beginPath(); c.roundRect(x,1036,46,8,4); c.fill();
